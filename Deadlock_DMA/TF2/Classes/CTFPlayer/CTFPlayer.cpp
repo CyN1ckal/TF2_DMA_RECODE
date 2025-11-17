@@ -1,191 +1,46 @@
 #include "pch.h"
 
-#include "TF2/Classes/CBaseEntity/CBaseEntity.h"
-#include "Engine/Matrix.h"
-#include "TF2/Constants/Strings/ConstStrings.h"
-#include "TF2/Constants/eTFCond.h"
-#include "TF2/Constants/eTFClass.h"
 #include "CTFPlayer.h"
 
-#include "GUI/Color Picker/Color Picker.h"
-#include "TF2/IEntityList/IEntityList.h"
+#include "TF2/Offsets/Offsets.h"
 
-const std::string CTFPlayerInfo::m_GetClassName() const
+void CTFPlayer::PrepareRead_1(VMMDLL_SCATTER_HANDLE vmsh)
 {
-	using namespace Constants;
+	CBaseEntity::PrepareRead_1(vmsh);
 
-	switch (m_ClassID)
-	{
-	case 1:
-		return ScoutString;
-	case 2:
-		return SniperString;
-	case 3:
-		return SoldierString;
-	case 4:
-		return DemoString;
-	case 5:
-		return MedicString;
-	case 6:
-		return HeavyString;
-	case 7:
-		return PyroString;
-	case 8:
-		return SpyString;
-	case 9:
-		return EngineerString;
-	default:
-		return NullString;
-	};
+	uintptr_t ConditionBitsAddress = m_EntityAddress + Offsets::CTFPlayer::ConditionBits;
+	VMMDLL_Scatter_PrepareEx(vmsh, ConditionBitsAddress, sizeof(ConditionBits), reinterpret_cast<BYTE*>(&m_ConditionBits), nullptr);
+
+	uintptr_t BoneArrayPtr = m_EntityAddress + Offsets::CTFPlayer::BoneArray;
+	VMMDLL_Scatter_PrepareEx(vmsh, BoneArrayPtr, sizeof(uintptr_t), reinterpret_cast<BYTE*>(&m_BoneArrayAddress), nullptr);
+
+	uintptr_t ClassID = m_EntityAddress + Offsets::CTFPlayer::ClassID;
+	VMMDLL_Scatter_PrepareEx(vmsh, ClassID, sizeof(uint32_t), reinterpret_cast<BYTE*>(&m_PlayerClass), nullptr);
 }
 
-const std::string CTFPlayerInfo::m_GetTeamName() const
+void CTFPlayer::PrepareRead_2(VMMDLL_SCATTER_HANDLE vmsh)
 {
-	switch (m_TeamID)
-	{
-	case 1:
-		return "Spectator";
-	case 2:
-		return "Red";
-	case 3:
-		return "Blue";
-	default:
-		return "Null";
-	};
+	CBaseEntity::Finalize();
+
+	if (!m_BoneArrayAddress)
+		SetInvalid();
+
+	if (IsInvalid()) return;
+
+	VMMDLL_Scatter_PrepareEx(vmsh, m_BoneArrayAddress, sizeof(BoneArray), reinterpret_cast<BYTE*>(&m_BoneArray), reinterpret_cast<DWORD*>(&m_BytesRead));
 }
 
-const bool CTFPlayerInfo::m_IsAlive() const
+void CTFPlayer::Finalize()
 {
-	return m_DeadByte == 0;
+	if (m_BytesRead != sizeof(BoneArray))
+		SetInvalid();
 }
 
-const float CTFPlayerInfo::m_GetDistanceToLocalPlayer() const
+void CTFPlayer::QuickRead(VMMDLL_SCATTER_HANDLE vmsh)
 {
-	return m_Origin.Distance(IEntityList::m_LocalPlayerPos);
-}
+	if (IsInvalid()) return;
 
-const float CTFPlayerInfo::m_GetDistanceToLocalPlayerMeters() const
-{
-	return m_Origin.Distance(IEntityList::m_LocalPlayerPos) / HammerUnitPerMeter;
-}
+	CBaseEntity::QuickRead(vmsh);
 
-const uint32_t CTFPlayerInfo::m_GetHeadBoneIndex() const
-{
-	eTFClass ClassID = static_cast<eTFClass>(m_ClassID);
-	switch (ClassID)
-	{
-	case eTFClass::Scout:
-	case eTFClass::Medic:
-	case eTFClass::Soldier:
-	case eTFClass::Pyro:
-	case eTFClass::Spy:
-	case eTFClass::Heavy:
-	case eTFClass::Sniper:
-		return 6;
-	case eTFClass::Demo:
-		return 16;
-	case eTFClass::Engineer:
-		return 8;
-	default:
-		return 0;
-	}
-
-	return 0;
-}
-
-const uint32_t CTFPlayerInfo::m_GetBodyBoneIndex() const
-{
-	eTFClass ClassID = static_cast<eTFClass>(m_ClassID);
-	switch (ClassID)
-	{
-	case eTFClass::Soldier:
-	case eTFClass::Demo:
-	case eTFClass::Sniper:
-	case eTFClass::Medic:
-	case eTFClass::Scout:
-	case eTFClass::Spy:
-	case eTFClass::Pyro:
-		return 2;
-	case eTFClass::Engineer:
-	case eTFClass::Heavy:
-		return 3;
-	default:
-		return 0;
-	}
-
-	return 0;
-}
-
-const bool CTFPlayerInfo::m_InCondition(ETFCond Condition) const
-{
-	uint32_t Cond = Condition;
-
-	auto BitSet = m_ConditionBits.GetBits();
-
-	if (BitSet.test(Cond)) return true;
-
-	return false;
-}
-
-const bool CTFPlayerInfo::m_IsValidESPTarget() const
-{
-	if (m_TeamID < 2 || m_TeamID > 3) return 0;
-
-	if (m_ClassID < 1 || m_ClassID > 9) return 0;
-
-	if (m_IsDead()) return 0;
-
-	return 1;
-}
-
-const bool CTFPlayerInfo::m_IsDead() const
-{
-	if (m_DeadByte == 0x17 && m_CurrentHealth == 1) return 1;
-
-	return 0;
-}
-
-const ImVec4 CTFPlayerInfo::m_GetESPColor() const
-{
-	if (IsLocalPlayer()) return ColorPicker::LocalPlayer;
-
-	if (IsDormant()) return ColorPicker::Dormant;
-
-	if (m_TeamID == 1)
-		return ColorPicker::Spectator;
-
-	if (m_TeamID == 2)
-		return ColorPicker::RedTeam;
-
-	if (m_TeamID == 3)
-		return ColorPicker::BluTeam;
-
-	return ColorPicker::Unknown;
-}
-
-const uint16_t CTFPlayerInfo::m_GetMaxHealth() const
-{
-	switch (m_ClassID)
-	{
-	case 1: // Scout
-	case 2: // Sniper
-	case 8: // Spy
-	case 9: // Engineer
-		return 125;
-
-	case 5: // Medic
-		return 150;
-
-	case 4: // Demo
-	case 7: // Pyro
-		return 175;
-
-	case 3: // Soldier
-		return 200;
-
-	case 6: // Heavy
-		return 300;
-	}
-
-	return 0;
+	VMMDLL_Scatter_PrepareEx(vmsh, m_BoneArrayAddress, sizeof(BoneArray), reinterpret_cast<BYTE*>(&m_BoneArray), reinterpret_cast<DWORD*>(&m_BytesRead));
 }

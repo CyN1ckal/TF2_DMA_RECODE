@@ -1,6 +1,5 @@
 #include "pch.h"	
 
-#include "TF2/Classes/EntityClasses.h"
 #include "IEntityList.h"
 #include "TF2/Offsets/Offsets.h"
 #include "DMA/DMA.h"
@@ -84,16 +83,6 @@ bool IEntityList::UpdateEntityAddresses(DMA_Connection* Conn)
 	SortEntityAddresses(Conn);
 
 	UpdateAllCTFPlayerInfo(Conn);
-
-	UpdateBuildingInfo(Conn, true);
-
-	UpdateStickybombInfo(Conn);
-
-	UpdateRocketInfo(Conn);
-
-	UpdateAnimatingInfo(Conn);
-
-	UpdateCurrencyPackInfo(Conn);
 
 	return true;
 }
@@ -199,59 +188,15 @@ bool IEntityList::SortEntityAddresses(DMA_Connection* Conn)
 	VMMDLL_Scatter_CloseHandle(vmsh);
 
 	m_CTFPlayerAddresses.clear();
-	m_SentryAddresses.clear();
-	m_TeleportAddresses.clear();
-	m_DispenserAddresses.clear();
-	m_StickybombAddresses.clear();
-	m_RocketAddresses.clear();
-	m_AnimatingAddresses.clear();
-	m_AmmoPackAddresses.clear();
-	m_CurrencyPackAddresses.clear();
 
 	for (auto&& [EntAddr, VTableAddr] : EntityVTableMap)
 	{
 		auto Info = VTableMap.at(VTableAddr.VTableAddress);
-
-		if (std::find(m_AmmoPackModelAddresses.begin(), m_AmmoPackModelAddresses.end(), VTableAddr.ModelAddress) != m_AmmoPackModelAddresses.end())
-		{
-			m_AmmoPackAddresses.push_back(EntAddr);
-			continue;
-		}
-
-		if (std::find(m_HealhPackModelAddresses.begin(), m_HealhPackModelAddresses.end(), VTableAddr.ModelAddress) != m_HealhPackModelAddresses.end())
-		{
-			m_HealthPackAddresses.push_back(EntAddr);
-			continue;
-		}
-
-		switch (Info.ClassID)
+		auto ID = ClassIDs(Info.ClassID);
+		switch (ID)
 		{
 		case ClassIDs::CTFPlayer:
 			m_CTFPlayerAddresses.push_back(EntAddr);
-			continue;
-		case ClassIDs::CObjectTeleporter:
-			m_TeleportAddresses.push_back(EntAddr);
-			continue;
-		case ClassIDs::CObjectSentrygun:
-			m_SentryAddresses.push_back(EntAddr);
-			continue;
-		case ClassIDs::CObjectDispenser:
-			m_DispenserAddresses.push_back(EntAddr);
-			continue;
-		case ClassIDs::CTFGrenadePipebombProjectile:
-			m_StickybombAddresses.push_back(EntAddr);
-			continue;
-		case ClassIDs::CTFProjectile_Rocket:
-			m_RocketAddresses.push_back(EntAddr);
-			continue;
-		case ClassIDs::CBaseAnimating:
-			m_AnimatingAddresses.push_back(EntAddr);
-			continue;
-		case ClassIDs::CTFAmmoPack:
-			m_AmmoPackAddresses.push_back(EntAddr);
-			continue;
-		case ClassIDs::CCurrencyPack:
-			m_CurrencyPackAddresses.push_back(EntAddr);
 			continue;
 		default:
 			continue;
@@ -263,306 +208,313 @@ bool IEntityList::SortEntityAddresses(DMA_Connection* Conn)
 
 bool IEntityList::UpdateAllCTFPlayerInfo(DMA_Connection* Conn)
 {
-	std::scoped_lock CTFPlayerLock(m_CTFPlayerInfoMutex);
+	std::scoped_lock CTFPlayerLock(m_PlayersMutex);
 
 	if (m_CTFPlayerAddresses.empty())
 	{
 		std::println("[MyEntityList] m_CTFPlayerAddresses is empty!");
-
 		return false;
 	}
 
-	m_CTFPlayerInfoMap.clear();
+	m_Players.clear();
+
+	for (auto EntAddr : m_CTFPlayerAddresses)
+		m_Players.emplace_back(CTFPlayer(EntAddr));
 
 	auto& Proc = TF2::Proc();
+	const auto PID = Proc.GetPID();
 
-	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
-	for (auto EntAddr : m_CTFPlayerAddresses)
-	{
-		PrepareCTFPlayerReads(EntAddr, vmsh, m_CTFPlayerInfoMap[EntAddr]);
-	}
+	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), PID, VMMDLL_FLAG_NOCACHE);
+
+	for (auto& Player : m_Players)
+		Player.PrepareRead_1(vmsh);
+
 	VMMDLL_Scatter_Execute(vmsh);
-	VMMDLL_Scatter_Clear(vmsh, TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
 
-	for (auto&& [EntAddr, EntInfo] : m_CTFPlayerInfoMap)
-	{
-		PrepareCTFPlayerBoneReads(EntAddr, vmsh, EntInfo);
+	VMMDLL_Scatter_Clear(vmsh, PID, VMMDLL_FLAG_NOCACHE);
 
-		if (EntAddr == m_LocalPlayerAddr)
-			EntInfo.m_bIsLocalPlayer = true;
-	}
+	for (auto& Player : m_Players)
+		Player.PrepareRead_2(vmsh);
+
 	VMMDLL_Scatter_Execute(vmsh);
 
 	VMMDLL_Scatter_CloseHandle(vmsh);
+
+	for (auto& Player : m_Players)
+		Player.Finalize();
 
 	return true;
 }
 
 bool IEntityList::UpdateExistingCTFPlayerInfo(DMA_Connection* Conn)
 {
-	std::scoped_lock CTFPlayerLock(m_CTFPlayerInfoMutex);
+	std::scoped_lock CTFPlayerLock(m_PlayersMutex);
 
-	if (m_CTFPlayerInfoMap.empty())
+	if (m_CTFPlayerAddresses.empty())
 	{
-		std::println("[MyEntityList] m_CTFPlayerInfoMap is empty!");
-
+		std::println("[MyEntityList] m_CTFPlayerAddresses is empty!");
 		return false;
 	}
 
 	auto& Proc = TF2::Proc();
 
 	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
-	for (auto&& [EntAddr, EntInfo] : m_CTFPlayerInfoMap)
-	{
-		PrepareCTFPlayerReads(EntAddr, vmsh, EntInfo);
-	}
-	VMMDLL_Scatter_Execute(vmsh);
 
-	VMMDLL_Scatter_CloseHandle(vmsh);
-
-	return true;
-}
-
-bool IEntityList::UpdateBuildingInfo(DMA_Connection* Conn, bool bShouldClear)
-{
-	std::scoped_lock BuildingLock(m_SentryInfoMutex, m_DispenserInfoMutex, m_TeleportInfoMutex);
-
-	if (bShouldClear)
-	{
-		m_SentryInfoMap.clear();
-		m_TeleportInfoMap.clear();
-		m_DispenserInfoMap.clear();
-	}
-
-	auto& Proc = TF2::Proc();
-
-	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
-
-	for (auto SentryAddr : m_SentryAddresses)
-	{
-		PrepareCBaseEntityReads(SentryAddr, vmsh, m_SentryInfoMap[SentryAddr]);
-		PrepareCBuildingReads(SentryAddr, vmsh, m_SentryInfoMap[SentryAddr]);
-		PrepareCSentryReads(SentryAddr, vmsh, m_SentryInfoMap[SentryAddr]);
-	}
-
-	for (auto TeleportAddr : m_TeleportAddresses)
-	{
-		PrepareCBaseEntityReads(TeleportAddr, vmsh, m_TeleportInfoMap[TeleportAddr]);
-		PrepareCBuildingReads(TeleportAddr, vmsh, m_TeleportInfoMap[TeleportAddr]);
-	}
-
-	for (auto DispenserAddr : m_DispenserAddresses)
-	{
-		PrepareCBaseEntityReads(DispenserAddr, vmsh, m_DispenserInfoMap[DispenserAddr]);
-		PrepareCBuildingReads(DispenserAddr, vmsh, m_DispenserInfoMap[DispenserAddr]);
-	}
+	for (auto& Player : m_Players)
+		Player.QuickRead(vmsh);
 
 	VMMDLL_Scatter_Execute(vmsh);
 
 	VMMDLL_Scatter_CloseHandle(vmsh);
 
-	return true;
-}
-
-bool IEntityList::UpdateStickybombInfo(DMA_Connection* Conn)
-{
-	std::scoped_lock StickybombLock(m_StickybombInfoMutex);
-
-	m_StickybombInfoMap.clear();
-
-	auto& Proc = TF2::Proc();
-
-	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
-
-	for (auto BombAddr : m_StickybombAddresses)
-		PrepareCBaseEntityReads(BombAddr, vmsh, m_StickybombInfoMap[BombAddr]);
-
-	VMMDLL_Scatter_Execute(vmsh);
-
-	VMMDLL_Scatter_CloseHandle(vmsh);
+	for (auto& Player : m_Players)
+		Player.QuickFinalize();
 
 	return true;
 }
 
-bool IEntityList::UpdateRocketInfo(DMA_Connection* Conn)
-{
-	std::scoped_lock RocketLock(m_RocketInfoMutex);
 
-	m_RocketInfoMap.clear();
 
-	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
-
-	for (auto RocketAddr : m_RocketAddresses)
-		PrepareCBaseEntityReads(RocketAddr, vmsh, m_RocketInfoMap[RocketAddr]);
-
-	VMMDLL_Scatter_Execute(vmsh);
-
-	VMMDLL_Scatter_CloseHandle(vmsh);
-
-	return true;
-}
-
-bool IEntityList::UpdateHealthPackInfo(DMA_Connection* Conn)
-{
-	std::scoped_lock HealthPackLock(m_HealthPackInfoMutex);
-
-	m_HealthPackInfoMap.clear();
-
-	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
-
-	for (auto HealthPackAddr : m_HealthPackAddresses)
-		PrepareCBaseEntityReads(HealthPackAddr, vmsh, m_HealthPackInfoMap[HealthPackAddr]);
-
-	VMMDLL_Scatter_Execute(vmsh);
-
-	VMMDLL_Scatter_CloseHandle(vmsh);
-
-	return true;
-}
-
-bool IEntityList::UpdateAmmoPackInfo(DMA_Connection* Conn)
-{
-	std::scoped_lock AmmoPackLock(m_AmmoPackInfoMutex);
-
-	m_AmmoPackInfoMap.clear();
-
-	auto& Proc = TF2::Proc();
-
-	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
-
-	for (auto AmmoPackAddr : m_AmmoPackAddresses)
-		PrepareCBaseEntityReads(AmmoPackAddr, vmsh, m_AmmoPackInfoMap[AmmoPackAddr]);
-
-	VMMDLL_Scatter_Execute(vmsh);
-
-	VMMDLL_Scatter_CloseHandle(vmsh);
-
-	return true;
-}
-
-bool IEntityList::UpdateAnimatingInfo(DMA_Connection* Conn)
-{
-	std::scoped_lock AnimatingLock(m_AnimatingInfoMutex);
-
-	m_AnimatingInfoMap.clear();
-
-	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
-
-	for (auto AnimatingAddr : m_AnimatingAddresses)
-		PrepareCBaseEntityReads(AnimatingAddr, vmsh, m_AnimatingInfoMap[AnimatingAddr]);
-
-	VMMDLL_Scatter_Execute(vmsh);
-	VMMDLL_Scatter_Clear(vmsh, TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
-
-	return true;
-}
-
-bool IEntityList::UpdateCurrencyPackInfo(DMA_Connection* Conn)
-{
-	std::scoped_lock CurrencyLock(m_CurrencyPackInfoMutex);
-
-	m_CurrencyPackInfoMap.clear();
-
-	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
-
-	for (auto CurrencyPackAddr : m_CurrencyPackAddresses)
-		PrepareCBaseEntityReads(CurrencyPackAddr, vmsh, m_CurrencyPackInfoMap[CurrencyPackAddr]);
-
-	VMMDLL_Scatter_Execute(vmsh);
-
-	VMMDLL_Scatter_CloseHandle(vmsh);
-
-	return true;
-}
+//bool IEntityList::UpdateBuildingInfo(DMA_Connection* Conn, bool bShouldClear)
+//{
+//	std::scoped_lock BuildingLock(m_SentryInfoMutex, m_DispenserInfoMutex, m_TeleportInfoMutex);
+//
+//	if (bShouldClear)
+//	{
+//		m_SentryInfoMap.clear();
+//		m_TeleportInfoMap.clear();
+//		m_DispenserInfoMap.clear();
+//	}
+//
+//	auto& Proc = TF2::Proc();
+//
+//	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
+//
+//	for (auto SentryAddr : m_SentryAddresses)
+//	{
+//		PrepareCBaseEntityReads(SentryAddr, vmsh, m_SentryInfoMap[SentryAddr]);
+//		PrepareCBuildingReads(SentryAddr, vmsh, m_SentryInfoMap[SentryAddr]);
+//		PrepareCSentryReads(SentryAddr, vmsh, m_SentryInfoMap[SentryAddr]);
+//	}
+//
+//	for (auto TeleportAddr : m_TeleportAddresses)
+//	{
+//		PrepareCBaseEntityReads(TeleportAddr, vmsh, m_TeleportInfoMap[TeleportAddr]);
+//		PrepareCBuildingReads(TeleportAddr, vmsh, m_TeleportInfoMap[TeleportAddr]);
+//	}
+//
+//	for (auto DispenserAddr : m_DispenserAddresses)
+//	{
+//		PrepareCBaseEntityReads(DispenserAddr, vmsh, m_DispenserInfoMap[DispenserAddr]);
+//		PrepareCBuildingReads(DispenserAddr, vmsh, m_DispenserInfoMap[DispenserAddr]);
+//	}
+//
+//	VMMDLL_Scatter_Execute(vmsh);
+//
+//	VMMDLL_Scatter_CloseHandle(vmsh);
+//
+//	return true;
+//}
+//
+//bool IEntityList::UpdateStickybombInfo(DMA_Connection* Conn)
+//{
+//	std::scoped_lock StickybombLock(m_StickybombInfoMutex);
+//
+//	m_StickybombInfoMap.clear();
+//
+//	auto& Proc = TF2::Proc();
+//
+//	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
+//
+//	for (auto BombAddr : m_StickybombAddresses)
+//		PrepareCBaseEntityReads(BombAddr, vmsh, m_StickybombInfoMap[BombAddr]);
+//
+//	VMMDLL_Scatter_Execute(vmsh);
+//
+//	VMMDLL_Scatter_CloseHandle(vmsh);
+//
+//	return true;
+//}
+//
+//bool IEntityList::UpdateRocketInfo(DMA_Connection* Conn)
+//{
+//	std::scoped_lock RocketLock(m_RocketInfoMutex);
+//
+//	m_RocketInfoMap.clear();
+//
+//	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
+//
+//	for (auto RocketAddr : m_RocketAddresses)
+//		PrepareCBaseEntityReads(RocketAddr, vmsh, m_RocketInfoMap[RocketAddr]);
+//
+//	VMMDLL_Scatter_Execute(vmsh);
+//
+//	VMMDLL_Scatter_CloseHandle(vmsh);
+//
+//	return true;
+//}
+//
+//bool IEntityList::UpdateHealthPackInfo(DMA_Connection* Conn)
+//{
+//	std::scoped_lock HealthPackLock(m_HealthPackInfoMutex);
+//
+//	m_HealthPackInfoMap.clear();
+//
+//	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
+//
+//	for (auto HealthPackAddr : m_HealthPackAddresses)
+//		PrepareCBaseEntityReads(HealthPackAddr, vmsh, m_HealthPackInfoMap[HealthPackAddr]);
+//
+//	VMMDLL_Scatter_Execute(vmsh);
+//
+//	VMMDLL_Scatter_CloseHandle(vmsh);
+//
+//	return true;
+//}
+//
+//bool IEntityList::UpdateAmmoPackInfo(DMA_Connection* Conn)
+//{
+//	std::scoped_lock AmmoPackLock(m_AmmoPackInfoMutex);
+//
+//	m_AmmoPackInfoMap.clear();
+//
+//	auto& Proc = TF2::Proc();
+//
+//	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
+//
+//	for (auto AmmoPackAddr : m_AmmoPackAddresses)
+//		PrepareCBaseEntityReads(AmmoPackAddr, vmsh, m_AmmoPackInfoMap[AmmoPackAddr]);
+//
+//	VMMDLL_Scatter_Execute(vmsh);
+//
+//	VMMDLL_Scatter_CloseHandle(vmsh);
+//
+//	return true;
+//}
+//
+//bool IEntityList::UpdateAnimatingInfo(DMA_Connection* Conn)
+//{
+//	std::scoped_lock AnimatingLock(m_AnimatingInfoMutex);
+//
+//	m_AnimatingInfoMap.clear();
+//
+//	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
+//
+//	for (auto AnimatingAddr : m_AnimatingAddresses)
+//		PrepareCBaseEntityReads(AnimatingAddr, vmsh, m_AnimatingInfoMap[AnimatingAddr]);
+//
+//	VMMDLL_Scatter_Execute(vmsh);
+//	VMMDLL_Scatter_Clear(vmsh, TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
+//
+//	return true;
+//}
+//
+//bool IEntityList::UpdateCurrencyPackInfo(DMA_Connection* Conn)
+//{
+//	std::scoped_lock CurrencyLock(m_CurrencyPackInfoMutex);
+//
+//	m_CurrencyPackInfoMap.clear();
+//
+//	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
+//
+//	for (auto CurrencyPackAddr : m_CurrencyPackAddresses)
+//		PrepareCBaseEntityReads(CurrencyPackAddr, vmsh, m_CurrencyPackInfoMap[CurrencyPackAddr]);
+//
+//	VMMDLL_Scatter_Execute(vmsh);
+//
+//	VMMDLL_Scatter_CloseHandle(vmsh);
+//
+//	return true;
+//}
 
 uintptr_t IEntityList::GetIClientEntityListAddr()
 {
 	return TF2::Proc().GetClientBase() + Offsets::EntityList;
 }
-
-bool IEntityList::PrepareCTFPlayerReads(uintptr_t PlayerAddr, VMMDLL_SCATTER_HANDLE vmsh, CTFPlayerInfo& pi)
-{
-	if (pi.m_BoneMatrixAddr)
-		VMMDLL_Scatter_PrepareEx(vmsh, pi.m_BoneMatrixAddr, sizeof(BoneArray), (BYTE*)&pi.m_BoneArray, nullptr);
-
-	PrepareCBaseEntityReads(PlayerAddr, vmsh, pi);
-
-	uintptr_t HealthAddress = PlayerAddr + Offsets::PlayerCurrentHealth;
-	VMMDLL_Scatter_PrepareEx(vmsh, HealthAddress, sizeof(uint32_t), (BYTE*)&pi.m_CurrentHealth, nullptr);
-
-	uintptr_t ClassAddress = PlayerAddr + Offsets::PlayerClassID;
-	VMMDLL_Scatter_PrepareEx(vmsh, ClassAddress, sizeof(uint32_t), (BYTE*)&pi.m_ClassID, nullptr);
-
-	uintptr_t DeadAddress = PlayerAddr + Offsets::PlayerDeadByte;
-	VMMDLL_Scatter_PrepareEx(vmsh, DeadAddress, sizeof(uint8_t), (BYTE*)&pi.m_DeadByte, nullptr);
-
-	uintptr_t PlayerIDAddress = PlayerAddr + Offsets::CBaseEntity::EntityID;
-	VMMDLL_Scatter_PrepareEx(vmsh, PlayerIDAddress, sizeof(uint32_t), (BYTE*)&pi.EntityID, nullptr);
-
-	uintptr_t BoneMatrixAddr = PlayerAddr + Offsets::PlayerBoneMatrix;
-	VMMDLL_Scatter_PrepareEx(vmsh, BoneMatrixAddr, sizeof(uintptr_t), (BYTE*)&pi.m_BoneMatrixAddr, nullptr);
-
-	uintptr_t ConditionAddr = PlayerAddr + Offsets::PlayerConditionBits;
-	VMMDLL_Scatter_PrepareEx(vmsh, ConditionAddr, sizeof(ConditionBits), (BYTE*)&pi.m_ConditionBits, nullptr);
-
-	if (PlayerAddr == m_LocalPlayerAddr)
-	{
-		uintptr_t RotationAddr = PlayerAddr + Offsets::PlayerRotation;
-		VMMDLL_Scatter_PrepareEx(vmsh, RotationAddr, sizeof(Vector3), (BYTE*)&pi.m_Rotation, nullptr);
-	}
-
-	return true;
-}
-
-bool IEntityList::PrepareCTFPlayerBoneReads(uintptr_t PlayerAddr, VMMDLL_SCATTER_HANDLE vmsh, CTFPlayerInfo& pi)
-{
-	if (pi.m_BoneMatrixAddr)
-	{
-		VMMDLL_Scatter_PrepareEx(vmsh, pi.m_BoneMatrixAddr, sizeof(BoneArray), (BYTE*)&pi.m_BoneArray, nullptr);
-	}
-
-	return true;
-}
-
-bool IEntityList::PrepareCBaseEntityReads(uintptr_t EntAddr, VMMDLL_SCATTER_HANDLE vmsh, CBaseEntityInfo& ei)
-{
-	uintptr_t PositionAddress = EntAddr + Offsets::CBaseEntity::Origin;
-	VMMDLL_Scatter_PrepareEx(vmsh, PositionAddress, sizeof(Vector3), (BYTE*)&ei.m_Origin, nullptr);
-
-	uintptr_t TeamAddress = EntAddr + Offsets::CBaseEntity::Team;
-	VMMDLL_Scatter_PrepareEx(vmsh, TeamAddress, sizeof(uint32_t), (BYTE*)&ei.m_TeamID, nullptr);
-
-	uintptr_t DormantAddr = EntAddr + Offsets::CBaseEntity::PlayerDormant;
-	VMMDLL_Scatter_PrepareEx(vmsh, DormantAddr, sizeof(uint8_t), (BYTE*)&ei.m_DormantByte, nullptr);
-
-	return true;
-}
-
-bool IEntityList::PrepareCBuildingReads(uintptr_t BuildingAddr, VMMDLL_SCATTER_HANDLE vmsh, CBuilding& bi)
-{
-	uintptr_t BuildingLevelAddr = BuildingAddr + Offsets::Buildings::CBuilding::CurrentBuildingLevel;
-	VMMDLL_Scatter_PrepareEx(vmsh, BuildingLevelAddr, sizeof(bi.m_CurrentBuildingLevel), (BYTE*)&bi.m_CurrentBuildingLevel, nullptr);
-
-	uintptr_t UpgradeProgressAddr = BuildingAddr + Offsets::Buildings::CBuilding::UpgradeProgress;
-	VMMDLL_Scatter_PrepareEx(vmsh, UpgradeProgressAddr, sizeof(bi.m_UpgradeProgress), (BYTE*)&bi.m_UpgradeProgress, nullptr);
-
-	/* Read current and max health at once. They are continguous. */
-	uintptr_t CurrentHealthAddr = BuildingAddr + Offsets::Buildings::CBuilding::CurrentHealth;
-	VMMDLL_Scatter_PrepareEx(vmsh, CurrentHealthAddr, sizeof(bi.m_CurrentHealth) * 2, (BYTE*)&bi.m_CurrentHealth, nullptr);
-
-	return true;
-}
-
-bool IEntityList::PrepareCSentryReads(uintptr_t BuildingAddr, VMMDLL_SCATTER_HANDLE vmsh, CSentryGun& si)
-{
-	uintptr_t NumBulletsAddr = BuildingAddr + Offsets::Buildings::Sentry::NumBullets;
-	VMMDLL_Scatter_PrepareEx(vmsh, NumBulletsAddr, sizeof(si.NumBullets), (BYTE*)&si.NumBullets, nullptr);
-
-	uintptr_t NumRocketsAddr = BuildingAddr + Offsets::Buildings::Sentry::NumRockets;
-	VMMDLL_Scatter_PrepareEx(vmsh, NumRocketsAddr, sizeof(si.NumRockets), (BYTE*)&si.NumRockets, nullptr);
-
-	return true;
-}
+//
+//bool IEntityList::PrepareCTFPlayerReads(uintptr_t PlayerAddr, VMMDLL_SCATTER_HANDLE vmsh, CTFPlayerInfo& pi)
+//{
+//	if (pi.m_BoneMatrixAddr)
+//		VMMDLL_Scatter_PrepareEx(vmsh, pi.m_BoneMatrixAddr, sizeof(BoneArray), (BYTE*)&pi.m_BoneArray, nullptr);
+//
+//	PrepareCBaseEntityReads(PlayerAddr, vmsh, pi);
+//
+//	uintptr_t HealthAddress = PlayerAddr + Offsets::PlayerCurrentHealth;
+//	VMMDLL_Scatter_PrepareEx(vmsh, HealthAddress, sizeof(uint32_t), (BYTE*)&pi.m_CurrentHealth, nullptr);
+//
+//	uintptr_t ClassAddress = PlayerAddr + Offsets::PlayerClassID;
+//	VMMDLL_Scatter_PrepareEx(vmsh, ClassAddress, sizeof(uint32_t), (BYTE*)&pi.m_ClassID, nullptr);
+//
+//	uintptr_t DeadAddress = PlayerAddr + Offsets::PlayerDeadByte;
+//	VMMDLL_Scatter_PrepareEx(vmsh, DeadAddress, sizeof(uint8_t), (BYTE*)&pi.m_DeadByte, nullptr);
+//
+//	uintptr_t PlayerIDAddress = PlayerAddr + Offsets::CBaseEntity::EntityID;
+//	VMMDLL_Scatter_PrepareEx(vmsh, PlayerIDAddress, sizeof(uint32_t), (BYTE*)&pi.EntityID, nullptr);
+//
+//	uintptr_t BoneMatrixAddr = PlayerAddr + Offsets::PlayerBoneMatrix;
+//	VMMDLL_Scatter_PrepareEx(vmsh, BoneMatrixAddr, sizeof(uintptr_t), (BYTE*)&pi.m_BoneMatrixAddr, nullptr);
+//
+//	uintptr_t ConditionAddr = PlayerAddr + Offsets::PlayerConditionBits;
+//	VMMDLL_Scatter_PrepareEx(vmsh, ConditionAddr, sizeof(ConditionBits), (BYTE*)&pi.m_ConditionBits, nullptr);
+//
+//	if (PlayerAddr == m_LocalPlayerAddr)
+//	{
+//		uintptr_t RotationAddr = PlayerAddr + Offsets::PlayerRotation;
+//		VMMDLL_Scatter_PrepareEx(vmsh, RotationAddr, sizeof(Vector3), (BYTE*)&pi.m_Rotation, nullptr);
+//	}
+//
+//	return true;
+//}
+//
+//bool IEntityList::PrepareCTFPlayerBoneReads(uintptr_t PlayerAddr, VMMDLL_SCATTER_HANDLE vmsh, CTFPlayerInfo& pi)
+//{
+//	if (pi.m_BoneMatrixAddr)
+//	{
+//		VMMDLL_Scatter_PrepareEx(vmsh, pi.m_BoneMatrixAddr, sizeof(BoneArray), (BYTE*)&pi.m_BoneArray, nullptr);
+//	}
+//
+//	return true;
+//}
+//
+//bool IEntityList::PrepareCBaseEntityReads(uintptr_t EntAddr, VMMDLL_SCATTER_HANDLE vmsh, CBaseEntityInfo& ei)
+//{
+//	uintptr_t PositionAddress = EntAddr + Offsets::CBaseEntity::Origin;
+//	VMMDLL_Scatter_PrepareEx(vmsh, PositionAddress, sizeof(Vector3), (BYTE*)&ei.m_Origin, nullptr);
+//
+//	uintptr_t TeamAddress = EntAddr + Offsets::CBaseEntity::Team;
+//	VMMDLL_Scatter_PrepareEx(vmsh, TeamAddress, sizeof(uint32_t), (BYTE*)&ei.m_TeamID, nullptr);
+//
+//	uintptr_t DormantAddr = EntAddr + Offsets::CBaseEntity::PlayerDormant;
+//	VMMDLL_Scatter_PrepareEx(vmsh, DormantAddr, sizeof(uint8_t), (BYTE*)&ei.m_DormantByte, nullptr);
+//
+//	return true;
+//}
+//
+//bool IEntityList::PrepareCBuildingReads(uintptr_t BuildingAddr, VMMDLL_SCATTER_HANDLE vmsh, CBuilding& bi)
+//{
+//	uintptr_t BuildingLevelAddr = BuildingAddr + Offsets::Buildings::CBuilding::CurrentBuildingLevel;
+//	VMMDLL_Scatter_PrepareEx(vmsh, BuildingLevelAddr, sizeof(bi.m_CurrentBuildingLevel), (BYTE*)&bi.m_CurrentBuildingLevel, nullptr);
+//
+//	uintptr_t UpgradeProgressAddr = BuildingAddr + Offsets::Buildings::CBuilding::UpgradeProgress;
+//	VMMDLL_Scatter_PrepareEx(vmsh, UpgradeProgressAddr, sizeof(bi.m_UpgradeProgress), (BYTE*)&bi.m_UpgradeProgress, nullptr);
+//
+//	/* Read current and max health at once. They are continguous. */
+//	uintptr_t CurrentHealthAddr = BuildingAddr + Offsets::Buildings::CBuilding::CurrentHealth;
+//	VMMDLL_Scatter_PrepareEx(vmsh, CurrentHealthAddr, sizeof(bi.m_CurrentHealth) * 2, (BYTE*)&bi.m_CurrentHealth, nullptr);
+//
+//	return true;
+//}
+//
+//bool IEntityList::PrepareCSentryReads(uintptr_t BuildingAddr, VMMDLL_SCATTER_HANDLE vmsh, CSentryGun& si)
+//{
+//	uintptr_t NumBulletsAddr = BuildingAddr + Offsets::Buildings::Sentry::NumBullets;
+//	VMMDLL_Scatter_PrepareEx(vmsh, NumBulletsAddr, sizeof(si.NumBullets), (BYTE*)&si.NumBullets, nullptr);
+//
+//	uintptr_t NumRocketsAddr = BuildingAddr + Offsets::Buildings::Sentry::NumRockets;
+//	VMMDLL_Scatter_PrepareEx(vmsh, NumRocketsAddr, sizeof(si.NumRockets), (BYTE*)&si.NumRockets, nullptr);
+//
+//	return true;
+//}
 
 std::vector<uintptr_t> ModelAddresses;
 std::vector<uintptr_t> ModelNameAddresses;
@@ -666,18 +618,18 @@ bool IEntityList::PopulateModelAddresses(DMA_Connection* Conn)
 		}
 	}
 
-	m_HealthPackAddresses.clear();
+	//m_HealthPackAddresses.clear();
 
-	for (auto&& ModelName : m_HealthPackModelNames)
-	{
-		auto ModelAddr = ModelNameMap.find(ModelName);
+	//for (auto&& ModelName : m_HealthPackModelNames)
+	//{
+	//	auto ModelAddr = ModelNameMap.find(ModelName);
 
-		if (ModelAddr != ModelNameMap.end())
-		{
-			//std::println("[MyEntityList] Found Health Pack Model: {0:s} Address: 0x{1:X}", ModelName, ModelAddr->second);
-			m_HealhPackModelAddresses.push_back(ModelAddr->second);
-		}
-	}
+	//	if (ModelAddr != ModelNameMap.end())
+	//	{
+	//		//std::println("[MyEntityList] Found Health Pack Model: {0:s} Address: 0x{1:X}", ModelName, ModelAddr->second);
+	//		m_HealhPackModelAddresses.push_back(ModelAddr->second);
+	//	}
+	//}
 
 	return true;
 }

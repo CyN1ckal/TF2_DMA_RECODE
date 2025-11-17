@@ -30,7 +30,7 @@ private:
 
 extern std::atomic<bool> bRunning;
 
-void DMAThread(DMA_Connection* Conn, Process* Deadlock)
+void DMAThread(DMA_Connection* Conn, Process* TF2)
 {
 #ifdef TRACY_ENABLE
 	tracy::SetThreadName("DMA Thread");

@@ -1,18 +1,33 @@
 #pragma once
 #include "Engine/Vector3.h"
 
-class CBaseEntityInfo
+class CBaseEntity
 {
 public:
-	Vector3 m_Origin = { 0.0f,0.0f,0.0f };
-	uint32_t m_TeamID = 0;
-	uint32_t EntityID = 0;
-	bool m_bIsLocalPlayer = false;
-	int8_t m_DormantByte = 0x0;
+	Vector3 m_Origin{ 0.0f,0.0f,0.0f };
+	uintptr_t m_EntityAddress{ 0 };
+	uintptr_t m_ModelAddress{ 0 };
+	uint32_t m_BytesRead{ 0 };
+	uint32_t m_CurrentHealth{ 0 };
+	uint32_t m_TeamID{ 0 };
+	uint32_t m_PlayerIndex{ 0 };
+	uint8_t m_Flags{ 0 };
+	int8_t m_DormantByte{ 0x0 };
 
-	const bool IsFriendly() const;
-	const bool IsLocalPlayer() const;
-	const ImVec4 GetTeamColor() const;
-	const bool IsDormant() const;
-	const float DistanceFromLocalPlayerMeters() const;
+public:
+	CBaseEntity(uintptr_t EntityAddress) : m_EntityAddress(EntityAddress)
+	{
+		if (m_EntityAddress == 0)
+			SetInvalid();
+	};
+	void SetInvalid() {
+		m_Flags |= 0x1;
+	}
+	bool IsInvalid() {
+		return (m_Flags & 0x1);
+	}
+	void PrepareRead_1(VMMDLL_SCATTER_HANDLE vmsh);
+	void Finalize();
+	void QuickRead(VMMDLL_SCATTER_HANDLE vmsh);
+	void QuickFinalize();
 };

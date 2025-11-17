@@ -87,18 +87,6 @@
     <ClCompile Include="TF2\IEntityList\IEntityList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TF2\Classes\CBaseEntity\CBaseEntity.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TF2\Classes\CBuilding\CBuilding.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TF2\Classes\CSentryGun\CSentryGun.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TF2\Classes\CTFPlayer\CTFPlayer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TF2\Offsets\Offsets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -109,6 +97,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Math\MatrixMath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TF2\Classes\CBaseEntity\CBaseEntity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TF2\Classes\CTFPlayer\CTFPlayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -209,27 +203,6 @@
     <ClInclude Include="TF2\IEntityList\IEntityList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TF2\Classes\EntityClasses.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TF2\Classes\CBaseEntity\CBaseEntity.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TF2\Classes\CBuilding\CBuilding.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TF2\Classes\CSentryGun\CSentryGun.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TF2\Classes\CTFPlayer\BoneArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TF2\Classes\CTFPlayer\ConditionBits.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TF2\Classes\CTFPlayer\CTFPlayer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TF2\Classes\Misc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -258,6 +231,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Math\MatrixMath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TF2\Classes\CBaseEntity\CBaseEntity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TF2\Classes\CTFPlayer\CTFPlayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TF2\Classes\CTFPlayer\ConditionBits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TF2\Classes\CTFPlayer\BoneArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TF2\Constants\Bone Pairs\BonePairs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

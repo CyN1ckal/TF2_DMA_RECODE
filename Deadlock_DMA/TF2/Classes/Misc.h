@@ -42,7 +42,7 @@ public:
 	int32_t ClassID; //0x0028
 };
 
-enum ClassIDs : int
+enum class ClassIDs : int
 {
 	CBaseAnimating = 1,
 	CBaseDoor = 6,

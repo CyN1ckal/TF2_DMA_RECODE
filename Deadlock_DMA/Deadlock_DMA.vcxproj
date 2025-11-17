@@ -611,8 +611,6 @@
     <ClCompile Include="GUI\Fuser\ESP\Draw\Players.cpp" />
     <ClCompile Include="TF2\Camera\Camera.cpp" />
     <ClCompile Include="TF2\Classes\CBaseEntity\CBaseEntity.cpp" />
-    <ClCompile Include="TF2\Classes\CBuilding\CBuilding.cpp" />
-    <ClCompile Include="TF2\Classes\CSentryGun\CSentryGun.cpp" />
     <ClCompile Include="TF2\Classes\CTFPlayer\CTFPlayer.cpp" />
     <ClCompile Include="TF2\IEntityList\IEntityList.cpp" />
     <ClCompile Include="DMA\DMA Thread.cpp" />
@@ -653,13 +651,11 @@
     <ClInclude Include="GUI\Query.h" />
     <ClInclude Include="TF2\Camera\Camera.h" />
     <ClInclude Include="TF2\Classes\CBaseEntity\CBaseEntity.h" />
-    <ClInclude Include="TF2\Classes\CBuilding\CBuilding.h" />
-    <ClInclude Include="TF2\Classes\CSentryGun\CSentryGun.h" />
     <ClInclude Include="TF2\Classes\CTFPlayer\BoneArray.h" />
     <ClInclude Include="TF2\Classes\CTFPlayer\ConditionBits.h" />
     <ClInclude Include="TF2\Classes\CTFPlayer\CTFPlayer.h" />
-    <ClInclude Include="TF2\Classes\EntityClasses.h" />
     <ClInclude Include="TF2\Classes\Misc.h" />
+    <ClInclude Include="TF2\Constants\Bone Pairs\BonePairs.h" />
     <ClInclude Include="TF2\Constants\eTFClass.h" />
     <ClInclude Include="TF2\Constants\Strings\ConstStrings.h" />
     <ClInclude Include="TF2\Constants\Strings\EntityNames.h" />

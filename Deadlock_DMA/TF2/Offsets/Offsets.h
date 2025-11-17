@@ -15,17 +15,25 @@ namespace Offsets
 		bool FindEntityListOffset(DMA_Connection* Conn);
 		bool FindMaxPlayersOffset(DMA_Connection* Conn);
 		bool FindViewMatrixOffset(DMA_Connection* Conn);
-		bool FindBaseAddresses(DMA_Connection* Conn);
 		bool FindGGameAddr(DMA_Connection* Conn);
 	}
 
 	namespace CBaseEntity
 	{
-		inline uint32_t Origin = 0x448;
-		inline uint32_t Team = 0xDC;
-		inline uint32_t PlayerDormant = 0x21A;
-		inline uint32_t pModel = 0x88;
-		inline uint32_t EntityID = 0x78;
+		inline std::ptrdiff_t PlayerID = 0x78;
+		inline std::ptrdiff_t DeadByte = 0x7C;
+		inline std::ptrdiff_t pModel = 0x88;
+		inline std::ptrdiff_t CurrentHealth = 0xD4;
+		inline std::ptrdiff_t TeamID = 0xDC;
+		inline std::ptrdiff_t DormantByte = 0x21A;
+		inline std::ptrdiff_t Origin = 0x448;
+	}
+
+	namespace CTFPlayer
+	{
+		inline std::ptrdiff_t BoneArray = 0x838;
+		inline std::ptrdiff_t ConditionBits = 0x1F64;
+		inline std::ptrdiff_t ClassID = 0x1BA0;
 	}
 
 	namespace CModelInfo
@@ -53,7 +61,6 @@ namespace Offsets
 
 	/* Manual */
 	inline uint32_t PlayerArray = 0x48;
-	inline uint32_t PlayerCurrentHealth = 0xD4;
 	inline uint32_t PlayerClassID = 0x1BA0;
 	inline uint32_t PlayerDeadByte = 0x7C;
 	inline uint32_t PlayerRotation = 0x3B8;

@@ -2,41 +2,52 @@
 
 #include "CBaseEntity.h"
 
-#include "TF2/IEntityList/IEntityList.h"
-#include "GUI/Color Picker/Color Picker.h"
-#include "TF2/TF2.h"
+#include "TF2/Offsets/Offsets.h"
 
-using namespace IEntityList;
-
-const bool CBaseEntityInfo::IsFriendly() const
+void CBaseEntity::PrepareRead_1(VMMDLL_SCATTER_HANDLE vmsh)
 {
-	return m_TeamID == IEntityList::m_CTFPlayerInfoMap[IEntityList::m_LocalPlayerAddr].m_TeamID;
+	if (IsInvalid())
+		return;
+
+	uintptr_t PlayerIndexAddress = m_EntityAddress + Offsets::CBaseEntity::PlayerID;
+	VMMDLL_Scatter_PrepareEx(vmsh, PlayerIndexAddress, sizeof(uint32_t), reinterpret_cast<BYTE*>(&m_PlayerIndex), nullptr);
+
+	uintptr_t DeadByteAddress = m_EntityAddress + Offsets::CBaseEntity::DeadByte;
+	VMMDLL_Scatter_PrepareEx(vmsh, DeadByteAddress, sizeof(int8_t), reinterpret_cast<BYTE*>(&m_Flags), nullptr);
+
+	uintptr_t ModelPtrAddress = m_EntityAddress + Offsets::CBaseEntity::pModel;
+	VMMDLL_Scatter_PrepareEx(vmsh, ModelPtrAddress, sizeof(uintptr_t), reinterpret_cast<BYTE*>(&m_ModelAddress), nullptr);
+
+	uintptr_t CurrentHealthAddress = m_EntityAddress + Offsets::CBaseEntity::CurrentHealth;
+	VMMDLL_Scatter_PrepareEx(vmsh, CurrentHealthAddress, sizeof(uint32_t), reinterpret_cast<BYTE*>(&m_CurrentHealth), nullptr);
+
+	uintptr_t TeamIDAddress = m_EntityAddress + Offsets::CBaseEntity::TeamID;
+	VMMDLL_Scatter_PrepareEx(vmsh, TeamIDAddress, sizeof(uint32_t), reinterpret_cast<BYTE*>(&m_TeamID), nullptr);
+
+	uintptr_t DormantByteAddress = m_EntityAddress + Offsets::CBaseEntity::DormantByte;
+	VMMDLL_Scatter_PrepareEx(vmsh, DormantByteAddress, sizeof(int8_t), reinterpret_cast<BYTE*>(&m_DormantByte), nullptr);
+
+	uintptr_t OriginAddress = m_EntityAddress + Offsets::CBaseEntity::Origin;
+	VMMDLL_Scatter_PrepareEx(vmsh, OriginAddress, sizeof(Vector3), reinterpret_cast<BYTE*>(&m_Origin), reinterpret_cast<DWORD*>(&m_BytesRead));
 }
 
-const ImVec4 CBaseEntityInfo::GetTeamColor() const
+void CBaseEntity::Finalize()
 {
-	if (m_TeamID == 2)
-		return ColorPicker::RedTeam;
-
-	if (m_TeamID == 3)
-		return ColorPicker::BluTeam;
-
-	return ColorPicker::Unknown;
+	if (m_BytesRead != sizeof(Vector3))
+		SetInvalid();
 }
 
-const bool CBaseEntityInfo::IsDormant() const
+void CBaseEntity::QuickRead(VMMDLL_SCATTER_HANDLE vmsh)
 {
-	return m_DormantByte;
+	if (IsInvalid())
+		return;
+
+	uintptr_t OriginAddress = m_EntityAddress + Offsets::CBaseEntity::Origin;
+	VMMDLL_Scatter_PrepareEx(vmsh, OriginAddress, sizeof(Vector3), reinterpret_cast<BYTE*>(&m_Origin), reinterpret_cast<DWORD*>(&m_BytesRead));
 }
 
-const float CBaseEntityInfo::DistanceFromLocalPlayerMeters() const
+void CBaseEntity::QuickFinalize()
 {
-	auto& LocalPlayer = IEntityList::m_CTFPlayerInfoMap[IEntityList::m_LocalPlayerAddr];
-
-	return m_Origin.Distance(LocalPlayer.m_Origin) / HammerUnitPerMeter;
-}
-
-const bool CBaseEntityInfo::IsLocalPlayer() const
-{
-	return m_bIsLocalPlayer;
+	if (m_BytesRead != sizeof(Vector3))
+		SetInvalid();
 }

@@ -2,7 +2,5 @@
 
 #include "Engine/Matrix.h"
 
-struct BoneArray
-{
-	Matrix34 m_BoneArray[49] = { 0 };
-};
+constexpr size_t MAX_BONES = 49;
+using BoneArray = Matrix34[MAX_BONES];
