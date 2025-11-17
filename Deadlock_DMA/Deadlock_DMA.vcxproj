@@ -609,7 +609,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Math\MatrixMath.cpp" />
     <ClCompile Include="GUI\Fuser\ESP\Draw\Buildings.cpp" />
+    <ClCompile Include="GUI\Fuser\ESP\Draw\General Drawing.cpp" />
     <ClCompile Include="GUI\Fuser\ESP\Draw\Players.cpp" />
+    <ClCompile Include="GUI\Fuser\ESP\Draw\Explosives.cpp" />
     <ClCompile Include="TF2\Camera\Camera.cpp" />
     <ClCompile Include="TF2\Classes\CBaseEntity\CBaseEntity.cpp" />
     <ClCompile Include="TF2\Classes\CGenericBuilding\CGenericBuilding.cpp" />
@@ -650,14 +652,18 @@
     <ClInclude Include="GUI\Fonts\Data\StackSans-SemiBold.h" />
     <ClInclude Include="GUI\Fonts\Fonts.h" />
     <ClInclude Include="GUI\Fuser\ESP\Draw\Buildings.h" />
+    <ClInclude Include="GUI\Fuser\ESP\Draw\General Drawing.h" />
     <ClInclude Include="GUI\Fuser\ESP\Draw\Players.h" />
+    <ClInclude Include="GUI\Fuser\ESP\Draw\Explosives.h" />
     <ClInclude Include="GUI\Keybinds\Keybinds.h" />
     <ClInclude Include="GUI\Query.h" />
     <ClInclude Include="TF2\Camera\Camera.h" />
     <ClInclude Include="TF2\Classes\CBaseEntity\CBaseEntity.h" />
     <ClInclude Include="TF2\Classes\CDispenser\CDispenser.h" />
     <ClInclude Include="TF2\Classes\CGenericBuilding\CGenericBuilding.h" />
+    <ClInclude Include="TF2\Classes\CRocket\CRocket.h" />
     <ClInclude Include="TF2\Classes\CSentryGun\CSentryGun.h" />
+    <ClInclude Include="TF2\Classes\CStickybomb\CStickybomb.h" />
     <ClInclude Include="TF2\Classes\CTeleporter\CTeleporter.h" />
     <ClInclude Include="TF2\Classes\CTFPlayer\BoneArray.h" />
     <ClInclude Include="TF2\Classes\CTFPlayer\ConditionBits.h" />

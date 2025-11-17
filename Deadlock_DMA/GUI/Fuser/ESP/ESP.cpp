@@ -6,6 +6,7 @@
 
 #include "Draw/Players.h"
 #include "Draw/Buildings.h"
+#include "Draw/Explosives.h"
 
 void ESP::OnFrame()
 {
@@ -22,6 +23,8 @@ void ESP::OnFrame()
 	Draw_Players::DrawAll();
 
 	Draw_Buildings::DrawAll();
+
+	Draw_Explosives::DrawAll();
 
 	ImGui::PopFont();
 }

@@ -114,6 +114,12 @@
     <ClCompile Include="GUI\Fuser\ESP\Draw\Buildings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\Fuser\ESP\Draw\Explosives.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\Fuser\ESP\Draw\General Drawing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -270,6 +276,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TF2\Classes\CDispenser\CDispenser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TF2\Classes\CStickybomb\CStickybomb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TF2\Classes\CRocket\CRocket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Fuser\ESP\Draw\Explosives.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Fuser\ESP\Draw\General Drawing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

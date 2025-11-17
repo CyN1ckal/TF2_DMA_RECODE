@@ -8,7 +8,6 @@ class Draw_Buildings
 {
 public:
 	static void DrawAll();
-
 	static void operator()(CSentryGun& Gun);
 	static void operator()(CGenericBuilding& Generic);
 	static void operator()(CDispenser& Generic);

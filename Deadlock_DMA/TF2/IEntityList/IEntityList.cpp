@@ -90,6 +90,8 @@ bool IEntityList::UpdateEntityAddresses(DMA_Connection* Conn)
 
 	UpdateAllBuildings(Conn);
 
+	UpdateAllExplosives(Conn);
+
 	return true;
 }
 
@@ -199,6 +201,8 @@ bool IEntityList::SortEntityAddresses(DMA_Connection* Conn)
 	m_SentryAddresses.clear();
 	m_DispenserAddresses.clear();
 	m_TeleporterAddresses.clear();
+	m_RocketAddresses.clear();
+	m_StickybombAddresses.clear();
 
 	for (auto&& [EntAddr, VTableAddr] : EntityVTableMap)
 	{
@@ -217,6 +221,12 @@ bool IEntityList::SortEntityAddresses(DMA_Connection* Conn)
 			continue;
 		case ClassIDs::CObjectTeleporter:
 			m_TeleporterAddresses.push_back(EntAddr);
+			continue;
+		case ClassIDs::CTFGrenadePipebombProjectile:
+			m_StickybombAddresses.push_back(EntAddr);
+			continue;
+		case ClassIDs::CTFProjectile_Rocket:
+			m_RocketAddresses.push_back(EntAddr);
 			continue;
 		default:
 			continue;
@@ -346,6 +356,52 @@ bool IEntityList::UpdateExistingBuildings(DMA_Connection* Conn)
 
 	for (auto& Building : m_Buildings)
 		std::visit([](auto& Build) { Build.QuickFinalize(); }, Building);
+
+	return false;
+}
+
+bool IEntityList::UpdateAllExplosives(DMA_Connection* Conn)
+{
+	ZoneScoped;
+
+	std::scoped_lock lk(m_ExplosiveMutex);
+
+	m_Explosives.clear();
+
+	for (auto& RocketAddress : m_RocketAddresses)
+		m_Explosives.emplace_back(CRocket(RocketAddress));
+
+	for (auto& BombAddress : m_StickybombAddresses)
+		m_Explosives.emplace_back(CStickybomb(BombAddress));
+
+	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
+
+	for (auto& Explosive : m_Explosives)
+		std::visit([vmsh](auto& Explo) {Explo.PrepareRead_1(vmsh); }, Explosive);
+
+	VMMDLL_Scatter_Execute(vmsh);
+
+	for (auto& Explosive : m_Explosives)
+		std::visit([](auto& Explo) {Explo.Finalize(); }, Explosive);
+
+	return false;
+}
+
+bool IEntityList::UpdateExistingExplosives(DMA_Connection* Conn)
+{
+	ZoneScoped;
+
+	std::scoped_lock lk(m_ExplosiveMutex);
+
+	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
+
+	for (auto& Explosive : m_Explosives)
+		std::visit([vmsh](auto& Explo) {Explo.QuickRead(vmsh); }, Explosive);
+
+	VMMDLL_Scatter_Execute(vmsh);
+
+	for (auto& Explosive : m_Explosives)
+		std::visit([](auto& Explo) {Explo.QuickFinalize(); }, Explosive);
 
 	return false;
 }
