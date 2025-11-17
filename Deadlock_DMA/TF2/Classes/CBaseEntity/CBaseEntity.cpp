@@ -4,7 +4,7 @@
 
 #include "TF2/Offsets/Offsets.h"
 
-void CBaseEntity::PrepareRead_1(VMMDLL_SCATTER_HANDLE vmsh)
+void CBaseEntity::PrepareRead_1(VMMDLL_SCATTER_HANDLE vmsh, bool bReadHealth)
 {
 	if (IsInvalid())
 		return;

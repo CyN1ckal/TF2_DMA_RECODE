@@ -26,7 +26,7 @@ public:
 	bool IsInvalid() {
 		return (m_Flags & 0x1);
 	}
-	void PrepareRead_1(VMMDLL_SCATTER_HANDLE vmsh);
+	void PrepareRead_1(VMMDLL_SCATTER_HANDLE vmsh, bool bReadHealth = true);
 	void Finalize();
 	void QuickRead(VMMDLL_SCATTER_HANDLE vmsh);
 	void QuickFinalize();

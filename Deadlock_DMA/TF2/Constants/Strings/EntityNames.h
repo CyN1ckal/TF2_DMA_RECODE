@@ -21,4 +21,5 @@ namespace Constants
 	const inline std::string SentryString = "Sentry";
 	const inline std::string DispenserString = "Dispenser";
 	const inline std::string TeleporterString = "Teleporter";
+	const inline std::string BuildingString = "Building";
 }

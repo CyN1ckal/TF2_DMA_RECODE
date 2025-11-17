@@ -6,6 +6,8 @@
 
 void Camera::UpdateViewProjectionMatrix(DMA_Connection* Conn)
 {
+	ZoneScoped;
+
 	auto& Proc = TF2::Proc();
 
 	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), Proc.GetPID(), VMMDLL_FLAG_NOCACHE);

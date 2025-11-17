@@ -39,8 +39,9 @@ void DMAThread(DMA_Connection* Conn, Process* TF2)
 
 	CTimer LocalPlayerAddressTimer(std::chrono::seconds(1), [&Conn] { IEntityList::UpdateLocalPlayerAddress(Conn); });
 	CTimer UpdateEntityAddressesTimer(std::chrono::milliseconds(500), [&Conn] { IEntityList::UpdateEntityAddresses(Conn); });
-	CTimer UpdatePlayers(std::chrono::milliseconds(4), [&Conn] { IEntityList::UpdateExistingCTFPlayerInfo(Conn); });
-	CTimer ViewmatrixTimer(std::chrono::milliseconds(2), [&Conn] { Camera::UpdateViewProjectionMatrix(Conn); });
+	CTimer UpdatePlayers(std::chrono::milliseconds(2), [&Conn] { IEntityList::UpdateExistingCTFPlayerInfo(Conn); });
+	CTimer UpdateBuildings(std::chrono::milliseconds(250), [&Conn] {IEntityList::UpdateExistingBuildings(Conn);  });
+	CTimer ViewmatrixTimer(std::chrono::milliseconds(1), [&Conn] { Camera::UpdateViewProjectionMatrix(Conn); });
 	CTimer HotkeyTimer(std::chrono::milliseconds(10), [&Conn] { Keybinds::OnFrame(Conn); });
 
 	while (bRunning)
@@ -49,6 +50,7 @@ void DMAThread(DMA_Connection* Conn, Process* TF2)
 		LocalPlayerAddressTimer.Tick(CurrentTime);
 		UpdateEntityAddressesTimer.Tick(CurrentTime);
 		UpdatePlayers.Tick(CurrentTime);
+		UpdateBuildings.Tick(CurrentTime);
 		ViewmatrixTimer.Tick(CurrentTime);
 		HotkeyTimer.Tick(CurrentTime);
 	}

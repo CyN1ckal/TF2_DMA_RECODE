@@ -36,35 +36,29 @@ namespace Offsets
 		inline std::ptrdiff_t ClassID = 0x1BA0;
 	}
 
+	namespace CGenericBuilding
+	{
+		inline std::ptrdiff_t CurrentBuildingLevel{ 0x1330 };
+		inline std::ptrdiff_t UpgradeProgress{ 0x1334 };
+		inline std::ptrdiff_t DesiredBuildingLevel{ 0x1338 };
+		inline std::ptrdiff_t CurrentHealth{ 0x1380 };
+		inline std::ptrdiff_t MaxHealth{ 0x1384 };
+	}
+
+	namespace CSentryGun
+	{
+		inline std::ptrdiff_t NumBullets = 0x13F4;
+		inline std::ptrdiff_t NumRockets = 0x13FC;
+	}
+
 	namespace CModelInfo
 	{
 		inline uint32_t pModelName = 0x8;
 	}
 
-	namespace Buildings
-	{
-		namespace CBuilding
-		{
-			inline uint32_t CurrentBuildingLevel = 0x1330;
-			inline uint32_t UpgradeProgress = 0x1334;
-			inline uint32_t DesiredBuildingLevel = 0x1338;
-			inline uint32_t CurrentHealth = 0x1380;
-			inline uint32_t MaxHealth = 0x1384;
-		}
-
-		namespace Sentry
-		{
-			inline uint32_t NumBullets = 0x13F4;
-			inline uint32_t NumRockets = 0x13FC;
-		}
-	}
-
 	/* Manual */
 	inline uint32_t PlayerArray = 0x48;
-	inline uint32_t PlayerClassID = 0x1BA0;
-	inline uint32_t PlayerDeadByte = 0x7C;
 	inline uint32_t PlayerRotation = 0x3B8;
-	inline uint32_t PlayerConditionBits = 0x1F64;
 
 	/* Bone stuff */
 	inline uint32_t PlayerBoneMatrix = 0x838;

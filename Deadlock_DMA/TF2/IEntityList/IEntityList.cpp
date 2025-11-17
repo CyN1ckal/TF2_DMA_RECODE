@@ -9,6 +9,8 @@
 
 bool IEntityList::Initialize(DMA_Connection* Conn)
 {
+	ZoneScoped;
+
 	UpdateEntityAddresses(Conn);
 
 	return true;
@@ -17,6 +19,8 @@ bool IEntityList::Initialize(DMA_Connection* Conn)
 std::vector<CEntityEntry> m_RawEntityList;
 bool IEntityList::UpdateEntityAddresses(DMA_Connection* Conn)
 {
+	ZoneScoped;
+
 	if (!m_IClientEntityListAddr) [[unlikely]]
 	{
 		m_IClientEntityListAddr = GetIClientEntityListAddr();
@@ -84,6 +88,8 @@ bool IEntityList::UpdateEntityAddresses(DMA_Connection* Conn)
 
 	UpdateAllCTFPlayerInfo(Conn);
 
+	UpdateAllBuildings(Conn);
+
 	return true;
 }
 
@@ -108,6 +114,8 @@ std::unordered_map<uintptr_t, VTableInfo> VTableMap;
 
 bool IEntityList::SortEntityAddresses(DMA_Connection* Conn)
 {
+	ZoneScoped;
+
 	if (m_AllEntityAddresses.empty()) [[unlikey]]
 	{
 		std::println("[MyEntityList] No entity addresses found, cannot update entity classes.");
@@ -188,6 +196,9 @@ bool IEntityList::SortEntityAddresses(DMA_Connection* Conn)
 	VMMDLL_Scatter_CloseHandle(vmsh);
 
 	m_CTFPlayerAddresses.clear();
+	m_SentryAddresses.clear();
+	m_DispenserAddresses.clear();
+	m_TeleporterAddresses.clear();
 
 	for (auto&& [EntAddr, VTableAddr] : EntityVTableMap)
 	{
@@ -197,6 +208,15 @@ bool IEntityList::SortEntityAddresses(DMA_Connection* Conn)
 		{
 		case ClassIDs::CTFPlayer:
 			m_CTFPlayerAddresses.push_back(EntAddr);
+			continue;
+		case ClassIDs::CObjectSentrygun:
+			m_SentryAddresses.push_back(EntAddr);
+			continue;
+		case ClassIDs::CObjectDispenser:
+			m_DispenserAddresses.push_back(EntAddr);
+			continue;
+		case ClassIDs::CObjectTeleporter:
+			m_TeleporterAddresses.push_back(EntAddr);
 			continue;
 		default:
 			continue;
@@ -208,6 +228,8 @@ bool IEntityList::SortEntityAddresses(DMA_Connection* Conn)
 
 bool IEntityList::UpdateAllCTFPlayerInfo(DMA_Connection* Conn)
 {
+	ZoneScoped;
+
 	std::scoped_lock CTFPlayerLock(m_PlayersMutex);
 
 	if (m_CTFPlayerAddresses.empty())
@@ -248,6 +270,8 @@ bool IEntityList::UpdateAllCTFPlayerInfo(DMA_Connection* Conn)
 
 bool IEntityList::UpdateExistingCTFPlayerInfo(DMA_Connection* Conn)
 {
+	ZoneScoped;
+
 	std::scoped_lock CTFPlayerLock(m_PlayersMutex);
 
 	if (m_CTFPlayerAddresses.empty())
@@ -273,7 +297,58 @@ bool IEntityList::UpdateExistingCTFPlayerInfo(DMA_Connection* Conn)
 	return true;
 }
 
+bool IEntityList::UpdateAllBuildings(DMA_Connection* Conn)
+{
+	ZoneScoped;
 
+	std::scoped_lock lk(m_BuildingMutex);
+
+	m_Buildings.clear();
+
+	for (auto& SentryAddr : m_SentryAddresses)
+		m_Buildings.emplace_back(CSentryGun(SentryAddr));
+
+	for (auto& TeleporterAddr : m_TeleporterAddresses)
+		m_Buildings.emplace_back(CTeleporter(TeleporterAddr));
+
+	for (auto& DispenserAddr : m_DispenserAddresses)
+		m_Buildings.emplace_back(CDispenser(DispenserAddr));
+
+	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
+
+	for (auto& Building : m_Buildings)
+		std::visit([vmsh](auto& Build) { Build.PrepareRead_1(vmsh); }, Building);
+
+	VMMDLL_Scatter_Execute(vmsh);
+
+	VMMDLL_Scatter_CloseHandle(vmsh);
+
+	for (auto& Building : m_Buildings)
+		std::visit([](auto& Build) { Build.Finalize(); }, Building);
+
+	return false;
+}
+
+bool IEntityList::UpdateExistingBuildings(DMA_Connection* Conn)
+{
+	ZoneScoped;
+
+	std::scoped_lock lk(m_BuildingMutex);
+
+	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
+
+	for (auto& Building : m_Buildings)
+		std::visit([vmsh](auto& Build) { Build.QuickRead(vmsh); }, Building);
+
+	VMMDLL_Scatter_Execute(vmsh);
+
+	VMMDLL_Scatter_CloseHandle(vmsh);
+
+	for (auto& Building : m_Buildings)
+		std::visit([](auto& Build) { Build.QuickFinalize(); }, Building);
+
+	return false;
+}
 
 //bool IEntityList::UpdateBuildingInfo(DMA_Connection* Conn, bool bShouldClear)
 //{
@@ -534,6 +609,8 @@ const std::vector<std::string> m_HealthPackModelNames = {
 };
 bool IEntityList::PopulateModelAddresses(DMA_Connection* Conn)
 {
+	ZoneScoped;
+
 	if (m_AllEntityAddresses.empty())
 	{
 		std::println("[MyEntityList] No entity addresses found, cannot populate consumable model addresses.");
@@ -636,6 +713,8 @@ bool IEntityList::PopulateModelAddresses(DMA_Connection* Conn)
 
 void IEntityList::UpdateLocalPlayerAddress(DMA_Connection* Conn)
 {
+	ZoneScoped;
+
 	auto& Proc = TF2::Proc();
 
 	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), Proc.GetPID(), VMMDLL_FLAG_NOCACHE);

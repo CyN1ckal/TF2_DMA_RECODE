@@ -5,6 +5,7 @@
 #include "GUI/Color Picker/Color Picker.h"
 
 #include "Draw/Players.h"
+#include "Draw/Buildings.h"
 
 void ESP::OnFrame()
 {
@@ -19,6 +20,8 @@ void ESP::OnFrame()
 	ImGui::PushFont(nullptr, 16.0f);
 
 	Draw_Players::DrawAll();
+
+	Draw_Buildings::DrawAll();
 
 	ImGui::PopFont();
 }
