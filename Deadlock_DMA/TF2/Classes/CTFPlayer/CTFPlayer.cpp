@@ -4,6 +4,10 @@
 
 #include "TF2/Offsets/Offsets.h"
 
+#include "TF2/Constants/Strings/EntityNames.h"
+
+#include "TF2/IEntityList/IEntityList.h"
+
 void CTFPlayer::PrepareRead_1(VMMDLL_SCATTER_HANDLE vmsh)
 {
 	CBaseEntity::PrepareRead_1(vmsh);
@@ -34,6 +38,11 @@ void CTFPlayer::Finalize()
 {
 	if (m_BytesRead != sizeof(BoneArray))
 		SetInvalid();
+
+	if (IsInvalid()) return;
+
+	if (m_EntityAddress == IEntityList::m_LocalPlayerAddr)
+		SetLocalPlayer();
 }
 
 void CTFPlayer::QuickRead(VMMDLL_SCATTER_HANDLE vmsh)
@@ -43,4 +52,41 @@ void CTFPlayer::QuickRead(VMMDLL_SCATTER_HANDLE vmsh)
 	CBaseEntity::QuickRead(vmsh);
 
 	VMMDLL_Scatter_PrepareEx(vmsh, m_BoneArrayAddress, sizeof(BoneArray), reinterpret_cast<BYTE*>(&m_BoneArray), reinterpret_cast<DWORD*>(&m_BytesRead));
+}
+
+void CTFPlayer::SetLocalPlayer()
+{
+	m_Flags |= 0x2;
+}
+
+bool CTFPlayer::IsLocalPlayer()
+{
+	return (m_Flags & 0x2);
+}
+
+std::string_view CTFPlayer::GetPlayerClassName()
+{
+	switch (m_PlayerClass)
+	{
+	case eTFClass::Scout:
+		return Constants::ScoutString;
+	case eTFClass::Soldier:
+		return Constants::SoldierString;
+	case eTFClass::Pyro:
+		return Constants::PyroString;
+	case eTFClass::Demo:
+		return Constants::DemoString;
+	case eTFClass::Heavy:
+		return Constants::HeavyString;
+	case eTFClass::Engineer:
+		return Constants::EngineerString;
+	case eTFClass::Medic:
+		return Constants::MedicString;
+	case eTFClass::Sniper:
+		return Constants::SniperString;
+	case eTFClass::Spy:
+		return Constants::SpyString;
+	default:
+		return Constants::NullString;
+	}
 }

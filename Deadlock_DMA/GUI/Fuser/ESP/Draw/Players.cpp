@@ -13,10 +13,18 @@ void Draw_Players::DrawAll()
 
 	for (auto& Player : IEntityList::m_Players)
 	{
+		if (Player.IsInvalid()) continue;
+
+		if (Player.IsLocalPlayer()) continue;
+
 		Vector2 ScreenPos;
 		if (!WorldToScreen(Player.m_Origin, ScreenPos)) continue;
 
-		DrawList->AddCircleFilled({ WindowPos.x + ScreenPos.x, WindowPos.y + ScreenPos.y }, 5.0f, IM_COL32(255, 0, 0, 255));
+		ScreenPos += {WindowPos.x, WindowPos.y};
+
+		int LineNumber = 0;
+
+		DrawNametag(Player, ScreenPos, DrawList, LineNumber);
 
 		DrawBones(Player, WindowPos, DrawList);
 	}
@@ -41,6 +49,19 @@ void Draw_Players::DrawBones(CTFPlayer& Player, const ImVec2& WindowPos, ImDrawL
 		ImVec2 LineEndPos{ WindowPos.x + ScreenPos_2.x, WindowPos.y + ScreenPos_2.y };
 		DrawList->AddLine(LineStartPos, LineEndPos, ImColor(255, 255, 255), 2.0);
 	}
+}
+
+void Draw_Players::DrawNametag(CTFPlayer& Player, const Vector2& ScreenPos, ImDrawList* DrawList, int& LineNumber)
+{
+	std::string DisplayString = std::format("{0:d} {1:s}", Player.m_CurrentHealth, Player.GetPlayerClassName());
+
+	auto TextSize = ImGui::CalcTextSize(DisplayString.c_str());
+
+	ImVec2 TextPos{ ScreenPos.x - (TextSize.x * 0.5f), ScreenPos.y + (TextSize.y * LineNumber) };
+
+	DrawList->AddText(TextPos, ImColor(255, 255, 255), DisplayString.c_str());
+
+	LineNumber++;
 }
 
 /*

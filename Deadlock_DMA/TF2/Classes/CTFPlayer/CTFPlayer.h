@@ -17,4 +17,9 @@ public:
 	void PrepareRead_2(VMMDLL_SCATTER_HANDLE vmsh);
 	void Finalize();
 	void QuickRead(VMMDLL_SCATTER_HANDLE vmsh);
+
+public:
+	void SetLocalPlayer();
+	bool IsLocalPlayer();
+	std::string_view GetPlayerClassName();
 };
