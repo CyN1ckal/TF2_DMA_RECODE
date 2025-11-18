@@ -8,4 +8,8 @@ public:
 	static void DrawAll();
 	static void operator()(CRocket& Rocket);
 	static void operator()(CStickybomb& Bomb);
+
+public:
+	static inline bool bMasterToggle{ true };
+	static inline bool bHideFriendly{ true };
 };

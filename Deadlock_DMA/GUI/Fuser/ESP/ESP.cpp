@@ -31,9 +31,29 @@ void ESP::OnFrame()
 
 void ESP::RenderSettings()
 {
-	ImGui::Begin("ESP Settings");
+	if (!bSettings)
+		return;
+
+	ImGui::Begin("ESP Settings", &bSettings);
 
 	ImGui::Checkbox("Enable ESP", &bMasterToggle);
+
+	ImGui::Checkbox("Enable Player ESP", &Draw_Players::bMasterToggle);
+	ImGui::Indent();
+	ImGui::Checkbox("Hide Friendly Players", &Draw_Players::bHideFriendly);
+	ImGui::Checkbox("Hide Dormant Players", &Draw_Players::bHideDormant);
+	ImGui::Unindent();
+
+	ImGui::Checkbox("Enable Building ESP", &Draw_Buildings::bMasterToggle);
+	ImGui::Indent();
+	ImGui::Checkbox("Hide Friendly Buildings", &Draw_Buildings::bHideFriendly);
+	ImGui::Checkbox("Hide Dormant Buildings", &Draw_Buildings::bHideDormant);
+	ImGui::Unindent();
+
+	ImGui::Checkbox("Enable Explosive ESP", &Draw_Explosives::bMasterToggle);
+	ImGui::Indent();
+	ImGui::Checkbox("Hide Friendly Explosives", &Draw_Explosives::bHideFriendly);
+	ImGui::Unindent();
 
 	ImGui::End();
 }

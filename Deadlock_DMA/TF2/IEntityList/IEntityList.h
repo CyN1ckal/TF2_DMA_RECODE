@@ -21,10 +21,14 @@ namespace IEntityList
 	inline std::vector<uintptr_t> m_AmmoPackModelAddresses;
 	bool PopulateModelAddresses(DMA_Connection* Conn);
 
+	inline uintptr_t m_IClientEntityListAddr{ 0x0 };
+
 	void UpdateLocalPlayerAddress(DMA_Connection* Conn);
-	inline uintptr_t m_IClientEntityListAddr = 0x0;
-	inline uintptr_t m_LocalPlayerAddr = 0x0;
-	inline Vector3 m_LocalPlayerPos = { 0.0f,0.0f,0.0f };
+	Vector3 GetLocalPlayerPos();
+	inline std::mutex m_LocalPlayerMutex{};
+	inline uintptr_t m_LocalPlayerAddr{ 0x0 };
+	inline uint32_t m_LocalPlayerTeamID{ 0 };
+	inline Vector3 m_LocalPlayerPos{ 0.0f,0.0f,0.0f };
 
 	inline std::vector<uintptr_t> m_AllEntityAddresses;
 

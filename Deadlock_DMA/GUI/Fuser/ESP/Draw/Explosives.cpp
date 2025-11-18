@@ -14,10 +14,16 @@ void Draw_Explosives::DrawAll()
 
 void Draw_Explosives::operator()(CRocket& Rocket)
 {
+	if (bHideFriendly && Rocket.IsFriendly())
+		return;
+
 	DrawGenericText(Constants::RocketString, Rocket.m_Origin);
 }
 
 void Draw_Explosives::operator()(CStickybomb& Bomb)
 {
+	if (bHideFriendly && Bomb.IsFriendly())
+		return;
+
 	DrawGenericText(Constants::StickyString, Bomb.m_Origin);
 }

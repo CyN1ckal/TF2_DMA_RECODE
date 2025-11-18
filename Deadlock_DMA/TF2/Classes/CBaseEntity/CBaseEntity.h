@@ -30,4 +30,12 @@ public:
 	void Finalize();
 	void QuickRead(VMMDLL_SCATTER_HANDLE vmsh);
 	void QuickFinalize();
+
+public:
+	bool IsFriendly();
+	bool IsDormant();
+	float DistanceFromLocalPlayer(bool bInMeters = true);
+	bool IsBlu();
+	bool IsRed();
+	bool IsSpectator();
 };

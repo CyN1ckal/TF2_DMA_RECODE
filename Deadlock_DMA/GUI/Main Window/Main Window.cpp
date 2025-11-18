@@ -20,6 +20,8 @@ bool MainWindow::OnFrame()
 
 	Fuser::RenderSettings();
 	Fuser::OnFrame();
+	ESP::RenderSettings();
+	ColorPicker::RenderColorPicker();
 
 	PostFrame();
 

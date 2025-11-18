@@ -804,6 +804,14 @@ void IEntityList::UpdateLocalPlayerAddress(DMA_Connection* Conn)
 		return;
 
 	PreviousLocalPlayerAddr = LocalPlayerAddr;
+
+	std::scoped_lock lk(m_LocalPlayerMutex);
 	m_LocalPlayerAddr = LocalPlayerAddr;
 	std::println("[MyEntityList] LocalPlayerAddr updated: 0x{:X}", m_LocalPlayerAddr);
+}
+
+Vector3 IEntityList::GetLocalPlayerPos()
+{
+	std::scoped_lock lk(m_LocalPlayerMutex);
+	return m_LocalPlayerPos;
 }

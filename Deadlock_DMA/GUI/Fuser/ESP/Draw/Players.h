@@ -7,6 +7,11 @@ class Draw_Players
 public:
 	static void DrawAll();
 
+public:
+	static inline bool bMasterToggle{ true };
+	static inline bool bHideFriendly{ true };
+	static inline bool bHideDormant{ true };
+
 private:
 	static inline std::array<Vector2, MAX_BONES> m_ProjectedBoneCache{};
 	static void ProjectBonesToCache(CTFPlayer& Player);

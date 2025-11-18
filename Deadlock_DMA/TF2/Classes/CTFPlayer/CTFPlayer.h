@@ -16,7 +16,9 @@ public:
 	void PrepareRead_1(VMMDLL_SCATTER_HANDLE vmsh);
 	void PrepareRead_2(VMMDLL_SCATTER_HANDLE vmsh);
 	void Finalize();
+	void QuickFinalize();
 	void QuickRead(VMMDLL_SCATTER_HANDLE vmsh);
+	void UpdateLocalPlayerInfo();
 
 public:
 	void SetLocalPlayer();

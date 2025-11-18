@@ -4,6 +4,8 @@
 
 #include "TF2/Offsets/Offsets.h"
 
+#include "TF2/IEntityList/IEntityList.h"
+
 void CBaseEntity::PrepareRead_1(VMMDLL_SCATTER_HANDLE vmsh, bool bReadHealth)
 {
 	if (IsInvalid())
@@ -42,6 +44,9 @@ void CBaseEntity::QuickRead(VMMDLL_SCATTER_HANDLE vmsh)
 	if (IsInvalid())
 		return;
 
+	uintptr_t DormantByteAddress = m_EntityAddress + Offsets::CBaseEntity::DormantByte;
+	VMMDLL_Scatter_PrepareEx(vmsh, DormantByteAddress, sizeof(int8_t), reinterpret_cast<BYTE*>(&m_DormantByte), nullptr);
+
 	uintptr_t OriginAddress = m_EntityAddress + Offsets::CBaseEntity::Origin;
 	VMMDLL_Scatter_PrepareEx(vmsh, OriginAddress, sizeof(Vector3), reinterpret_cast<BYTE*>(&m_Origin), reinterpret_cast<DWORD*>(&m_BytesRead));
 }
@@ -50,4 +55,40 @@ void CBaseEntity::QuickFinalize()
 {
 	if (m_BytesRead != sizeof(Vector3))
 		SetInvalid();
+}
+
+bool CBaseEntity::IsFriendly()
+{
+	return IEntityList::m_LocalPlayerTeamID == m_TeamID;
+}
+
+bool CBaseEntity::IsDormant()
+{
+	return m_DormantByte;
+}
+
+float CBaseEntity::DistanceFromLocalPlayer(bool bInMeters)
+{
+	auto LocalPlayerPos = IEntityList::GetLocalPlayerPos();
+	auto Distance = m_Origin.Distance(LocalPlayerPos);
+
+	if (bInMeters)
+		Distance /= HammerUnitPerMeter;
+
+	return Distance;
+}
+
+bool CBaseEntity::IsBlu()
+{
+	return m_TeamID == 3;
+}
+
+bool CBaseEntity::IsRed()
+{
+	return m_TeamID == 2;
+}
+
+bool CBaseEntity::IsSpectator()
+{
+	return m_TeamID == 1;
 }

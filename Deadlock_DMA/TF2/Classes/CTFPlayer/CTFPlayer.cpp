@@ -41,8 +41,16 @@ void CTFPlayer::Finalize()
 
 	if (IsInvalid()) return;
 
-	if (m_EntityAddress == IEntityList::m_LocalPlayerAddr)
-		SetLocalPlayer();
+	UpdateLocalPlayerInfo();
+}
+
+void CTFPlayer::QuickFinalize()
+{
+	CBaseEntity::QuickFinalize();
+
+	if (IsInvalid()) return;
+
+	UpdateLocalPlayerInfo();
 }
 
 void CTFPlayer::QuickRead(VMMDLL_SCATTER_HANDLE vmsh)
@@ -51,12 +59,23 @@ void CTFPlayer::QuickRead(VMMDLL_SCATTER_HANDLE vmsh)
 
 	CBaseEntity::QuickRead(vmsh);
 
-	VMMDLL_Scatter_PrepareEx(vmsh, m_BoneArrayAddress, sizeof(BoneArray), reinterpret_cast<BYTE*>(&m_BoneArray), reinterpret_cast<DWORD*>(&m_BytesRead));
+	VMMDLL_Scatter_PrepareEx(vmsh, m_BoneArrayAddress, sizeof(BoneArray), reinterpret_cast<BYTE*>(&m_BoneArray), nullptr);
+}
+
+void CTFPlayer::UpdateLocalPlayerInfo()
+{
+	std::scoped_lock lk(IEntityList::m_LocalPlayerMutex);
+	if (m_EntityAddress == IEntityList::m_LocalPlayerAddr)
+	{
+		SetLocalPlayer();
+		IEntityList::m_LocalPlayerPos = m_Origin;
+	}
 }
 
 void CTFPlayer::SetLocalPlayer()
 {
 	m_Flags |= 0x2;
+	IEntityList::m_LocalPlayerTeamID = m_TeamID;
 }
 
 bool CTFPlayer::IsLocalPlayer()

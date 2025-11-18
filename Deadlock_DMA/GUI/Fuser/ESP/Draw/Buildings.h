@@ -9,9 +9,14 @@ class Draw_Buildings
 public:
 	static void DrawAll();
 	static void operator()(CSentryGun& Gun);
-	static void operator()(CGenericBuilding& Generic);
 	static void operator()(CDispenser& Generic);
 	static void operator()(CTeleporter& Generic);
 
+public:
+	static inline bool bMasterToggle{ true };
+	static inline bool bHideFriendly{ true };
+	static inline bool bHideDormant{ true };
+
 private:
+	static void DrawGenericBuildingNameTag(const std::string& Name, CGenericBuilding& Building);
 };

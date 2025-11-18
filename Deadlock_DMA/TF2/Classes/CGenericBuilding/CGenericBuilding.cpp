@@ -11,7 +11,7 @@ void CGenericBuilding::PrepareRead_1(VMMDLL_SCATTER_HANDLE vmsh)
 	if (IsInvalid()) return;
 
 	uintptr_t BuildingLevelAddress = m_EntityAddress + Offsets::CGenericBuilding::CurrentBuildingLevel;
-	VMMDLL_Scatter_PrepareEx(vmsh, BuildingLevelAddress, sizeof(uint32_t), reinterpret_cast<BYTE*>(m_CurrentBuildingLevel), nullptr);
+	VMMDLL_Scatter_PrepareEx(vmsh, BuildingLevelAddress, sizeof(uint32_t), reinterpret_cast<BYTE*>(&m_CurrentBuildingLevel), nullptr);
 
 	uintptr_t UpgradeProgressAddress = m_EntityAddress + Offsets::CGenericBuilding::UpgradeProgress;
 	VMMDLL_Scatter_PrepareEx(vmsh, UpgradeProgressAddress, sizeof(uint32_t), reinterpret_cast<BYTE*>(&m_UpgradeProgress), nullptr);
