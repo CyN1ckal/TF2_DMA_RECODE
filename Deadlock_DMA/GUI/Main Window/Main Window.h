@@ -1,5 +1,7 @@
 #pragma once
 
+extern "C" __declspec(dllexport) void Render(ImGuiContext* ctx);
+
 class MainWindow
 {
 public:

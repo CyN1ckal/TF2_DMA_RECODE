@@ -13,9 +13,16 @@
 #include "GUI/Fonts/Fonts.h"
 #include "GUI/Fonts/Data/Font Data.h"
 
-bool MainWindow::OnFrame()
+ImFont* MainWindowFont = nullptr;
+
+void Render(ImGuiContext* ctx)
 {
-	PreFrame();
+	ImGui::SetCurrentContext(ctx);
+
+	if (MainWindowFont == nullptr)
+		MainWindowFont = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(StackSans_SemiBold_Data, sizeof(StackSans_SemiBold_Data));
+
+	ImGui::PushFont(MainWindowFont, 16.0f);
 
 	ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID, nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
 
@@ -25,6 +32,15 @@ bool MainWindow::OnFrame()
 	ColorPicker::RenderColorPicker();
 	Aimbot::RenderSettings();
 	Keybinds::Render();
+
+	ImGui::PopFont();
+}
+
+bool MainWindow::OnFrame()
+{
+	PreFrame();
+
+	Render(ImGui::GetCurrentContext());
 
 	PostFrame();
 
