@@ -15,7 +15,7 @@ void CBaseEntity::PrepareRead_1(VMMDLL_SCATTER_HANDLE vmsh, bool bReadHealth)
 	VMMDLL_Scatter_PrepareEx(vmsh, PlayerIndexAddress, sizeof(uint32_t), reinterpret_cast<BYTE*>(&m_PlayerIndex), nullptr);
 
 	uintptr_t DeadByteAddress = m_EntityAddress + Offsets::CBaseEntity::DeadByte;
-	VMMDLL_Scatter_PrepareEx(vmsh, DeadByteAddress, sizeof(int8_t), reinterpret_cast<BYTE*>(&m_Flags), nullptr);
+	VMMDLL_Scatter_PrepareEx(vmsh, DeadByteAddress, sizeof(int8_t), reinterpret_cast<BYTE*>(&m_DeadByte), nullptr);
 
 	uintptr_t ModelPtrAddress = m_EntityAddress + Offsets::CBaseEntity::pModel;
 	VMMDLL_Scatter_PrepareEx(vmsh, ModelPtrAddress, sizeof(uintptr_t), reinterpret_cast<BYTE*>(&m_ModelAddress), nullptr);
@@ -46,6 +46,9 @@ void CBaseEntity::QuickRead(VMMDLL_SCATTER_HANDLE vmsh)
 
 	uintptr_t DormantByteAddress = m_EntityAddress + Offsets::CBaseEntity::DormantByte;
 	VMMDLL_Scatter_PrepareEx(vmsh, DormantByteAddress, sizeof(int8_t), reinterpret_cast<BYTE*>(&m_DormantByte), nullptr);
+
+	uintptr_t DeadByteAddress = m_EntityAddress + Offsets::CBaseEntity::DeadByte;
+	VMMDLL_Scatter_PrepareEx(vmsh, DeadByteAddress, sizeof(int8_t), reinterpret_cast<BYTE*>(&m_DeadByte), nullptr);
 
 	uintptr_t OriginAddress = m_EntityAddress + Offsets::CBaseEntity::Origin;
 	VMMDLL_Scatter_PrepareEx(vmsh, OriginAddress, sizeof(Vector3), reinterpret_cast<BYTE*>(&m_Origin), reinterpret_cast<DWORD*>(&m_BytesRead));
@@ -91,4 +94,14 @@ bool CBaseEntity::IsRed()
 bool CBaseEntity::IsSpectator()
 {
 	return m_TeamID == 1;
+}
+
+bool CBaseEntity::IsAlive()
+{
+	return m_DeadByte == 0;
+}
+
+bool CBaseEntity::IsDead()
+{
+	return m_DeadByte;
 }

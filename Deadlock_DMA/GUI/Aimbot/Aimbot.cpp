@@ -9,6 +9,7 @@
 #include "TF2/IEntityList/IEntityList.h"
 #include "TF2/Camera/Camera.h"
 #include "GUI/Fuser/Fuser.h"
+#include "GUI/Color Picker/Color Picker.h"
 
 void Aimbot::RenderSettings()
 {
@@ -46,8 +47,8 @@ void Aimbot::RenderFOVCircles()
 	auto DrawList = ImGui::GetWindowDrawList();
 
 	ImVec2 CenterScreen = { WindowPos.x + (WindowSize.x * 0.5f), WindowPos.y + (WindowSize.y * 0.5f) };
-	DrawList->AddCircle(CenterScreen, fDeadzoneFOV, ImColor(255, 0, 0), 0, 2.0f);
-	DrawList->AddCircle(CenterScreen, fMaxFOV, ImColor(255, 255, 255), 0, 2.0f);
+	DrawList->AddCircle(CenterScreen, fDeadzoneFOV, ColorPicker::DeadzoneFOV, 0, 2.0f);
+	DrawList->AddCircle(CenterScreen, fMaxFOV, ColorPicker::MaxFOV, 0, 2.0f);
 }
 
 void Aimbot::OnDMAFrame(DMA_Connection* Conn)
@@ -71,7 +72,12 @@ void Aimbot::OnDMAFrame(DMA_Connection* Conn)
 		Camera::UpdateViewProjectionMatrix(Conn);
 		IEntityList::UpdateExistingCTFPlayerInfo(Conn);
 
-		auto MouseDelta = GetMouseDelta();
+		Vector2 MouseDelta{};
+		if (PreviousTargetEntityAddress == 0x0)
+			MouseDelta = GetBestMouseDelta();
+		else
+			MouseDelta = GetMouseDeltaToTarget(PreviousTargetEntityAddress);
+
 		if (MouseDelta == PreviousDelta) continue;
 		PreviousDelta = MouseDelta;
 
@@ -80,10 +86,12 @@ void Aimbot::OnDMAFrame(DMA_Connection* Conn)
 		m_Device.mouseMove(MouseDelta.x, MouseDelta.y);
 	} while (c_keys::IsKeyDown(Conn, Keybinds::m_AimbotHotkey));
 
+	PreviousTargetEntityAddress = 0x0;
+
 	std::println("[Aimbot] Aimbot Ended");
 }
 
-Vector2 Aimbot::GetMouseDelta()
+Vector2 Aimbot::GetBestMouseDelta()
 {
 	std::scoped_lock lk(IEntityList::m_PlayersMutex);
 
@@ -98,6 +106,7 @@ Vector2 Aimbot::GetMouseDelta()
 		if (Player.IsLocalPlayer()) continue;
 		if (Player.IsFriendly()) continue;
 		if (Player.IsDormant()) continue;
+		if (Player.IsDead()) continue;
 
 		Vector2 ScreenPos{};
 		if (!WorldToScreen(Player.GetHeadPosition(), ScreenPos))
@@ -113,8 +122,37 @@ Vector2 Aimbot::GetMouseDelta()
 		{
 			ClosestDistance = Distance;
 			BestDelta = Delta;
+			PreviousTargetEntityAddress = Player.m_EntityAddress;
 		}
 	}
 
 	return BestDelta;
+}
+
+Vector2 Aimbot::GetMouseDeltaToTarget(uintptr_t TargetEntityAddress)
+{
+	std::scoped_lock lk(IEntityList::m_PlayersMutex);
+
+	Vector2 CenterScreen = { Fuser::ScreenSize.x * 0.5f, Fuser::ScreenSize.y * 0.5f };
+
+	float ClosestDistance = FLT_MAX;
+
+	for (auto& Player : IEntityList::m_Players)
+	{
+		if (Player.m_EntityAddress != TargetEntityAddress) continue;
+		if (Player.IsInvalid()) continue;
+		if (Player.IsLocalPlayer()) continue;
+		if (Player.IsFriendly()) continue;
+		if (Player.IsDormant()) continue;
+		if (Player.IsDead()) continue;
+
+		Vector2 ScreenPos{};
+		if (!WorldToScreen(Player.GetHeadPosition(), ScreenPos))
+			continue;
+
+		Vector2 Delta = ScreenPos - CenterScreen;
+		return Delta;
+	}
+
+	return Vector2();
 }

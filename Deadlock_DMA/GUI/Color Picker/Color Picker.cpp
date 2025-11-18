@@ -14,21 +14,16 @@ void ColorPicker::RenderColorPicker()
 
 	MyColorEdit4("Red Team", RedTeam);
 	MyColorEdit4("Blue Team", BluTeam);
-	MyColorEdit4("Spectator", Spectator);
 	MyColorEdit4("Dormant", Dormant);
-	MyColorEdit4("Local Player", LocalPlayer);
-	MyColorEdit4("Incomplete", Incomplete);
-	MyColorEdit4("Spy Alert", SpyAlert);
 	MyColorEdit4("Unknown", Unknown);
-	MyColorEdit4("Health Bar Background", HealthBarBackground);
-	MyColorEdit4("Health Bar Foreground", HealthBarForeground);
-	MyColorEdit4("Health Bar Overheal", HealthBarOverheal);
 	MyColorEdit4("Skeleton", Skeleton);
-	MyColorEdit4("Highlighted", Highlighted);
-	MyColorEdit4("FOV Circle", FOVCircle);
+	MyColorEdit4("Max FOV", MaxFOV);
+	MyColorEdit4("Deadzone FOV", DeadzoneFOV);
 	MyColorEdit4("Health Pack", HealthPack);
 	MyColorEdit4("Ammo Pack", AmmoPack);
 	MyColorEdit4("Money", Money);
+	MyColorEdit4("Rocket", Rocket);
+	MyColorEdit4("Sticky", Sticky);
 
 	ImGui::End();
 }

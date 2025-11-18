@@ -3,6 +3,7 @@
 #include "ConditionBits.h"
 #include "BoneArray.h"
 #include "TF2/Constants/eTFClass.h"
+#include "TF2/Constants/eTFCond.h"
 
 class CTFPlayer : public CBaseEntity
 {
@@ -25,4 +26,5 @@ public:
 	bool IsLocalPlayer();
 	std::string_view GetPlayerClassName();
 	Vector3 GetHeadPosition();
+	bool IsInCond(ETFCond Cond);
 };

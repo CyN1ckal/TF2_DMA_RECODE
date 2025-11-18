@@ -3,6 +3,7 @@
 #include "TF2/IEntityList/IEntityList.h"
 #include "General Drawing.h"
 #include "TF2/Constants/Strings/EntityNames.h"
+#include "GUI/Color Picker/Color Picker.h"
 
 void Draw_Explosives::DrawAll()
 {
@@ -17,7 +18,7 @@ void Draw_Explosives::operator()(CRocket& Rocket)
 	if (bHideFriendly && Rocket.IsFriendly())
 		return;
 
-	DrawGenericText(Constants::RocketString, Rocket.m_Origin);
+	DrawGenericText(Constants::RocketString, Rocket.m_Origin, ColorPicker::Rocket);
 }
 
 void Draw_Explosives::operator()(CStickybomb& Bomb)
@@ -25,5 +26,5 @@ void Draw_Explosives::operator()(CStickybomb& Bomb)
 	if (bHideFriendly && Bomb.IsFriendly())
 		return;
 
-	DrawGenericText(Constants::StickyString, Bomb.m_Origin);
+	DrawGenericText(Constants::StickyString, Bomb.m_Origin, ColorPicker::Sticky);
 }

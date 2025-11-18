@@ -59,6 +59,9 @@ void CTFPlayer::QuickRead(VMMDLL_SCATTER_HANDLE vmsh)
 
 	CBaseEntity::QuickRead(vmsh);
 
+	uintptr_t CurrentHealthAddress = m_EntityAddress + Offsets::CBaseEntity::CurrentHealth;
+	VMMDLL_Scatter_PrepareEx(vmsh, CurrentHealthAddress, sizeof(uint32_t), reinterpret_cast<BYTE*>(&m_CurrentHealth), nullptr);
+
 	VMMDLL_Scatter_PrepareEx(vmsh, m_BoneArrayAddress, sizeof(BoneArray), reinterpret_cast<BYTE*>(&m_BoneArray), nullptr);
 }
 
@@ -129,4 +132,10 @@ Vector3 CTFPlayer::GetHeadPosition()
 	default:
 		return { 0.0f,0.0f,0.0f };
 	}
+}
+
+bool CTFPlayer::IsInCond(ETFCond Cond)
+{
+	auto Bits = m_ConditionBits.GetBits();
+	return Bits.test(static_cast<int16_t>(Cond));
 }

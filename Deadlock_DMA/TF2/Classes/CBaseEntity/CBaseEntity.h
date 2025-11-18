@@ -13,6 +13,7 @@ public:
 	uint32_t m_PlayerIndex{ 0 };
 	uint8_t m_Flags{ 0 };
 	int8_t m_DormantByte{ 0x0 };
+	int8_t m_DeadByte{ 0x0 };
 
 public:
 	CBaseEntity(uintptr_t EntityAddress) : m_EntityAddress(EntityAddress)
@@ -38,4 +39,6 @@ public:
 	bool IsBlu();
 	bool IsRed();
 	bool IsSpectator();
+	bool IsAlive();
+	bool IsDead();
 };

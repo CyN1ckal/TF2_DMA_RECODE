@@ -41,9 +41,11 @@ void DMAThread(DMA_Connection* Conn, Process* TF2)
 	CTimer UpdateEntityAddressesTimer(std::chrono::milliseconds(500), [&Conn] { IEntityList::UpdateEntityAddresses(Conn); });
 	CTimer UpdatePlayers(std::chrono::milliseconds(2), [&Conn] { IEntityList::UpdateExistingCTFPlayerInfo(Conn); });
 	CTimer UpdateBuildings(std::chrono::milliseconds(250), [&Conn] {IEntityList::UpdateExistingBuildings(Conn);  });
-	CTimer UpdateExplosives(std::chrono::milliseconds(50), [&Conn] {IEntityList::UpdateExistingExplosives(Conn);  });
+	CTimer UpdateExplosives(std::chrono::milliseconds(25), [&Conn] {IEntityList::UpdateExistingExplosives(Conn);  });
+	CTimer UpdateConsumables(std::chrono::milliseconds(50), [&Conn] {IEntityList::UpdateExistingConsumables(Conn);  });
 	CTimer ViewmatrixTimer(std::chrono::milliseconds(1), [&Conn] { Camera::UpdateViewProjectionMatrix(Conn); });
 	CTimer HotkeyTimer(std::chrono::milliseconds(10), [&Conn] { Keybinds::OnFrame(Conn); });
+	CTimer ModelRefresh(std::chrono::seconds(10), [&Conn] { IEntityList::PopulateModelAddresses(Conn); });
 
 	while (bRunning)
 	{
@@ -52,8 +54,10 @@ void DMAThread(DMA_Connection* Conn, Process* TF2)
 		UpdateEntityAddressesTimer.Tick(CurrentTime);
 		UpdatePlayers.Tick(CurrentTime);
 		UpdateExplosives.Tick(CurrentTime);
+		UpdateConsumables.Tick(CurrentTime);
 		UpdateBuildings.Tick(CurrentTime);
 		ViewmatrixTimer.Tick(CurrentTime);
 		HotkeyTimer.Tick(CurrentTime);
+		ModelRefresh.Tick(CurrentTime);
 	}
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-enum ETFCond
+enum class ETFCond : int16_t
 {
 	TF_COND_INVALID = -1,
 	TF_COND_AIMING = 0, // Sniper aiming, Heavy minigun.

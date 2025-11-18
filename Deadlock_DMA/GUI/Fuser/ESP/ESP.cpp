@@ -7,6 +7,7 @@
 #include "Draw/Players.h"
 #include "Draw/Buildings.h"
 #include "Draw/Explosives.h"
+#include "Draw/Consumables.h"
 
 void ESP::OnFrame()
 {
@@ -25,6 +26,8 @@ void ESP::OnFrame()
 	Draw_Buildings::DrawAll();
 
 	Draw_Explosives::DrawAll();
+
+	Draw_Consumables::DrawAll();
 
 	ImGui::PopFont();
 }
@@ -53,6 +56,12 @@ void ESP::RenderSettings()
 	ImGui::Checkbox("Enable Explosive ESP", &Draw_Explosives::bMasterToggle);
 	ImGui::Indent();
 	ImGui::Checkbox("Hide Friendly Explosives", &Draw_Explosives::bHideFriendly);
+	ImGui::Unindent();
+
+	ImGui::Checkbox("Enable Consumable ESP", &Draw_Consumables::bMasterToggle);
+	ImGui::Indent();
+	ImGui::Checkbox("Draw Health Packs", &Draw_Consumables::bDrawHealthPacks);
+	ImGui::Checkbox("Draw Ammo Packs", &Draw_Consumables::bDrawAmmoPacks);
 	ImGui::Unindent();
 
 	ImGui::End();

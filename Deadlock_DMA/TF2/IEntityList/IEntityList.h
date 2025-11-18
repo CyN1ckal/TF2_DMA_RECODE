@@ -7,6 +7,8 @@
 #include "TF2/Classes/CDispenser/CDispenser.h"
 #include "TF2/Classes/CRocket/CRocket.h"
 #include "TF2/Classes/CStickybomb/CStickybomb.h"
+#include "TF2/Classes/CAmmoPack/CAmmoPack.h"
+#include "TF2/Classes/CHealthPack/CHealthPack.h"
 
 #include <variant>
 
@@ -54,4 +56,12 @@ namespace IEntityList
 	inline std::vector<Explosives> m_Explosives{};
 	inline std::vector<uintptr_t> m_RocketAddresses;
 	inline std::vector<uintptr_t> m_StickybombAddresses;
+
+	bool UpdateAllConsumables(DMA_Connection* Conn);
+	bool UpdateExistingConsumables(DMA_Connection* Conn);
+	using Consumables = std::variant<CHealthPack, CAmmoPack>;
+	inline std::mutex m_ConsumableMutex{};
+	inline std::vector<Consumables> m_Consumables{};
+	inline std::vector<uintptr_t> m_HealthPackAddresses{};
+	inline std::vector<uintptr_t> m_AmmoPackAddresses{};
 };

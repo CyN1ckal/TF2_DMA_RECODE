@@ -19,5 +19,7 @@ private:
 	static inline makcu::Device m_Device{};
 
 private:
-	static Vector2 GetMouseDelta();
+	static inline uintptr_t PreviousTargetEntityAddress{ 0 };
+	static Vector2 GetBestMouseDelta();
+	static Vector2 GetMouseDeltaToTarget(uintptr_t TargetEntityAddress);
 };

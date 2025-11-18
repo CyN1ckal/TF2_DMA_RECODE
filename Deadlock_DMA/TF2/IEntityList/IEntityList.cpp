@@ -13,6 +13,8 @@ bool IEntityList::Initialize(DMA_Connection* Conn)
 
 	UpdateEntityAddresses(Conn);
 
+	PopulateModelAddresses(Conn);
+
 	return true;
 }
 
@@ -91,6 +93,8 @@ bool IEntityList::UpdateEntityAddresses(DMA_Connection* Conn)
 	UpdateAllBuildings(Conn);
 
 	UpdateAllExplosives(Conn);
+
+	UpdateAllConsumables(Conn);
 
 	return true;
 }
@@ -203,10 +207,13 @@ bool IEntityList::SortEntityAddresses(DMA_Connection* Conn)
 	m_TeleporterAddresses.clear();
 	m_RocketAddresses.clear();
 	m_StickybombAddresses.clear();
+	m_HealthPackAddresses.clear();
+	m_AmmoPackAddresses.clear();
 
 	for (auto&& [EntAddr, VTableAddr] : EntityVTableMap)
 	{
 		auto Info = VTableMap.at(VTableAddr.VTableAddress);
+
 		auto ID = ClassIDs(Info.ClassID);
 		switch (ID)
 		{
@@ -228,7 +235,14 @@ bool IEntityList::SortEntityAddresses(DMA_Connection* Conn)
 		case ClassIDs::CTFProjectile_Rocket:
 			m_RocketAddresses.push_back(EntAddr);
 			continue;
+		case ClassIDs::CTFAmmoPack:
+			m_AmmoPackAddresses.push_back(EntAddr);
+			continue;
 		default:
+			if (std::ranges::find(m_AmmoPackModelAddresses, VTableAddr.ModelAddress) != m_AmmoPackModelAddresses.end())
+				m_AmmoPackAddresses.push_back(EntAddr);
+			else if (std::ranges::find(m_HealhPackModelAddresses, VTableAddr.ModelAddress) != m_HealhPackModelAddresses.end())
+				m_HealthPackAddresses.push_back(EntAddr);
 			continue;
 		}
 	}
@@ -402,6 +416,52 @@ bool IEntityList::UpdateExistingExplosives(DMA_Connection* Conn)
 
 	for (auto& Explosive : m_Explosives)
 		std::visit([](auto& Explo) {Explo.QuickFinalize(); }, Explosive);
+
+	return false;
+}
+
+bool IEntityList::UpdateAllConsumables(DMA_Connection* Conn)
+{
+	std::scoped_lock lk(m_ConsumableMutex);
+
+	m_Consumables.clear();
+
+	for (auto& HealthPackAddr : m_HealthPackAddresses)
+		m_Consumables.emplace_back(CHealthPack(HealthPackAddr));
+
+	for (auto& AmmoPackAddr : m_AmmoPackAddresses)
+		m_Consumables.emplace_back(CAmmoPack(AmmoPackAddr));
+
+	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
+
+	for (auto& Consumable : m_Consumables)
+		std::visit([vmsh](auto& Cons) { Cons.PrepareRead_1(vmsh); }, Consumable);
+
+	VMMDLL_Scatter_Execute(vmsh);
+
+	VMMDLL_Scatter_CloseHandle(vmsh);
+
+	for (auto& Consumable : m_Consumables)
+		std::visit([](auto& Cons) { Cons.Finalize(); }, Consumable);
+
+	return false;
+}
+
+bool IEntityList::UpdateExistingConsumables(DMA_Connection* Conn)
+{
+	std::scoped_lock lk(m_ConsumableMutex);
+
+	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
+
+	for (auto& Consumable : m_Consumables)
+		std::visit([vmsh](auto& Cons) { Cons.QuickRead(vmsh); }, Consumable);
+
+	VMMDLL_Scatter_Execute(vmsh);
+
+	VMMDLL_Scatter_CloseHandle(vmsh);
+
+	for (auto& Consumable : m_Consumables)
+		std::visit([](auto& Cons) { Cons.QuickFinalize(); }, Consumable);
 
 	return false;
 }
@@ -751,18 +811,18 @@ bool IEntityList::PopulateModelAddresses(DMA_Connection* Conn)
 		}
 	}
 
-	//m_HealthPackAddresses.clear();
+	m_HealthPackAddresses.clear();
 
-	//for (auto&& ModelName : m_HealthPackModelNames)
-	//{
-	//	auto ModelAddr = ModelNameMap.find(ModelName);
+	for (auto&& ModelName : m_HealthPackModelNames)
+	{
+		auto ModelAddr = ModelNameMap.find(ModelName);
 
-	//	if (ModelAddr != ModelNameMap.end())
-	//	{
-	//		//std::println("[MyEntityList] Found Health Pack Model: {0:s} Address: 0x{1:X}", ModelName, ModelAddr->second);
-	//		m_HealhPackModelAddresses.push_back(ModelAddr->second);
-	//	}
-	//}
+		if (ModelAddr != ModelNameMap.end())
+		{
+			//std::println("[MyEntityList] Found Health Pack Model: {0:s} Address: 0x{1:X}", ModelName, ModelAddr->second);
+			m_HealhPackModelAddresses.push_back(ModelAddr->second);
+		}
+	}
 
 	return true;
 }

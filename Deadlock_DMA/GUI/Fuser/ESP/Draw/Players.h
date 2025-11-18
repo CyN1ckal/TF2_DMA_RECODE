@@ -17,4 +17,5 @@ private:
 	static void ProjectBonesToCache(CTFPlayer& Player);
 	static void DrawBones(CTFPlayer& Player, const ImVec2& WindowPos, ImDrawList* DrawList);
 	static void DrawNametag(CTFPlayer& Player, const Vector2& ScreenPos, ImDrawList* DrawList, int& LineNumber);
+	static void DrawConditionString(CTFPlayer& Player, const Vector2& ScreenPos, ImDrawList* DrawList, int& LineNumber);
 };
