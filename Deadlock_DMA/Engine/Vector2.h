@@ -15,4 +15,13 @@ public:
 		x += other.x;
 		y += other.y;
 	}
+	void operator*=(const float& other)
+	{
+		x *= other;
+		y *= other;
+	}
+	bool operator==(const Vector2& other) const
+	{
+		return (x == other.x) && (y == other.y);
+	}
 };

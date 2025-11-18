@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Fuser.h"
 #include "ESP/ESP.h"
+#include "GUI/Aimbot/Aimbot.h"
 
 void Fuser::OnFrame()
 {
@@ -18,6 +19,8 @@ void Fuser::OnFrame()
 	ImGui::Begin("Fuser", nullptr, window_flags);
 
 	ESP::OnFrame();
+
+	Aimbot::RenderFOVCircles();
 
 	ImGui::End();
 

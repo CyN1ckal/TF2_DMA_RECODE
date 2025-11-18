@@ -6,6 +6,7 @@
 #include "GUI/Fuser/ESP/ESP.h"
 #include "GUI/Color Picker/Color Picker.h"
 #include "GUI/Keybinds/Keybinds.h"
+#include "GUI/Aimbot/Aimbot.h"
 
 #include "Styles/DeepDark.hpp"
 
@@ -22,6 +23,8 @@ bool MainWindow::OnFrame()
 	Fuser::OnFrame();
 	ESP::RenderSettings();
 	ColorPicker::RenderColorPicker();
+	Aimbot::RenderSettings();
+	Keybinds::Render();
 
 	PostFrame();
 

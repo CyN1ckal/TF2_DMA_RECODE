@@ -24,4 +24,5 @@ public:
 	void SetLocalPlayer();
 	bool IsLocalPlayer();
 	std::string_view GetPlayerClassName();
+	Vector3 GetHeadPosition();
 };

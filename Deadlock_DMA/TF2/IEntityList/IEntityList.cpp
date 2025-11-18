@@ -82,7 +82,7 @@ bool IEntityList::UpdateEntityAddresses(DMA_Connection* Conn)
 		m_AllEntityAddresses.push_back(entry.pEntity);
 	}
 
-	std::println("[MyEntityList] Found {0:d} valid entity addresses.", m_AllEntityAddresses.size());
+	//std::println("[MyEntityList] Found {0:d} valid entity addresses.", m_AllEntityAddresses.size());
 
 	SortEntityAddresses(Conn);
 

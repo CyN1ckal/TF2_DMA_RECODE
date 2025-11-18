@@ -120,6 +120,9 @@
     <ClCompile Include="GUI\Fuser\ESP\Draw\General Drawing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\Aimbot\Aimbot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -288,6 +291,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GUI\Fuser\ESP\Draw\General Drawing.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\Aimbot\Aimbot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

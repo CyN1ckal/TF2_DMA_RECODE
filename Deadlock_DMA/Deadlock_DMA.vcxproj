@@ -608,6 +608,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DbgPrint|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Engine\Math\MatrixMath.cpp" />
+    <ClCompile Include="GUI\Aimbot\Aimbot.cpp" />
     <ClCompile Include="GUI\Fuser\ESP\Draw\Buildings.cpp" />
     <ClCompile Include="GUI\Fuser\ESP\Draw\General Drawing.cpp" />
     <ClCompile Include="GUI\Fuser\ESP\Draw\Players.cpp" />
@@ -647,6 +648,7 @@
     <ClInclude Include="DMA\DMA Thread.h" />
     <ClInclude Include="DMA\Input Manager.h" />
     <ClInclude Include="Engine\Math\MatrixMath.h" />
+    <ClInclude Include="GUI\Aimbot\Aimbot.h" />
     <ClInclude Include="GUI\Fonts\Data\Font Data.h" />
     <ClInclude Include="GUI\Fonts\Data\StackSans-Regular.h" />
     <ClInclude Include="GUI\Fonts\Data\StackSans-SemiBold.h" />

@@ -109,3 +109,24 @@ std::string_view CTFPlayer::GetPlayerClassName()
 		return Constants::NullString;
 	}
 }
+
+Vector3 CTFPlayer::GetHeadPosition()
+{
+	switch (m_PlayerClass)
+	{
+	case eTFClass::Scout:
+	case eTFClass::Medic:
+	case eTFClass::Soldier:
+	case eTFClass::Pyro:
+	case eTFClass::Spy:
+	case eTFClass::Heavy:
+	case eTFClass::Sniper:
+		return m_BoneArray[6].GetPosition();
+	case eTFClass::Demo:
+		return m_BoneArray[16].GetPosition();
+	case eTFClass::Engineer:
+		return m_BoneArray[8].GetPosition();
+	default:
+		return { 0.0f,0.0f,0.0f };
+	}
+}
