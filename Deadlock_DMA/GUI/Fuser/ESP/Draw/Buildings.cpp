@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "Buildings.h"
 #include "TF2/IEntityList/IEntityList.h"
-#include "Engine/Math/MatrixMath.h"
 #include "TF2/Constants/Strings/EntityNames.h"
 #include "GUI/Color Picker/Color Picker.h"
 #include "General Drawing.h"
@@ -17,8 +16,6 @@ void Draw_Buildings::DrawAll()
 		std::visit(Draw_Buildings{}, Building);
 }
 
-
-
 void Draw_Buildings::operator()(CSentryGun& Gun)
 {
 	if (bHideFriendly && Gun.IsFriendly())
@@ -26,8 +23,21 @@ void Draw_Buildings::operator()(CSentryGun& Gun)
 
 	if (bHideDormant && Gun.IsDormant())
 		return;
-	
-	DrawGenericBuildingNameTag(Constants::SentryString, Gun);
+
+	Vector2 ScreenPos{};
+	if (!WorldToScreen(Gun.m_Origin, ScreenPos)) return;
+	auto WindowPos = ImGui::GetWindowPos();
+	ScreenPos += {WindowPos.x, WindowPos.y};
+
+	int LineNumber = 0;
+
+	DrawGenericBuildingNameTag(Constants::SentryString, Gun, ScreenPos, LineNumber);
+
+	if (bSentryHealthBar)
+		DrawBuildingHealthBar(Gun, ScreenPos, LineNumber);
+
+	if (bSentryAmmoBar)
+		DrawSentryAmmoBar(Gun, ScreenPos, LineNumber);
 }
 
 void Draw_Buildings::operator()(CDispenser& Dispenser)
@@ -38,7 +48,17 @@ void Draw_Buildings::operator()(CDispenser& Dispenser)
 	if (bHideDormant && Dispenser.IsDormant())
 		return;
 
-	DrawGenericBuildingNameTag(Constants::DispenserString, Dispenser);
+	Vector2 ScreenPos{};
+	if (!WorldToScreen(Dispenser.m_Origin, ScreenPos)) return;
+	auto WindowPos = ImGui::GetWindowPos();
+	ScreenPos += {WindowPos.x, WindowPos.y};
+
+	int LineNumber = 0;
+
+	DrawGenericBuildingNameTag(Constants::DispenserString, Dispenser, ScreenPos, LineNumber);
+
+	if (bDispenserHealthBar)
+		DrawBuildingHealthBar(Dispenser, ScreenPos, LineNumber);
 }
 
 void Draw_Buildings::operator()(CTeleporter& Teleporter)
@@ -49,21 +69,36 @@ void Draw_Buildings::operator()(CTeleporter& Teleporter)
 	if (bHideDormant && Teleporter.IsDormant())
 		return;
 
-	DrawGenericBuildingNameTag(Constants::TeleporterString, Teleporter);
-}
-
-void Draw_Buildings::DrawGenericBuildingNameTag(const std::string& Name, CGenericBuilding& Building)
-{
-	std::string BuildingString = std::format("({0:d}) {2:s} [{1:.0f}m]", Building.m_CurrentBuildingLevel, Building.DistanceFromLocalPlayer(), Name.c_str());
-
-	auto TextSize = ImGui::CalcTextSize(BuildingString.c_str());
-
 	Vector2 ScreenPos{};
-	if (!WorldToScreen(Building.m_Origin, ScreenPos)) return;
-
+	if (!WorldToScreen(Teleporter.m_Origin, ScreenPos)) return;
 	auto WindowPos = ImGui::GetWindowPos();
 	ScreenPos += {WindowPos.x, WindowPos.y};
 
-	auto DrawList = ImGui::GetWindowDrawList();
-	DrawList->AddText({ ScreenPos.x - (TextSize.x * 0.5f), ScreenPos.y }, (Building.IsBlu()) ? ColorPicker::BluTeam : ColorPicker::RedTeam, BuildingString.c_str());
+	int LineNumber = 0;
+
+	DrawGenericBuildingNameTag(Constants::TeleporterString, Teleporter, ScreenPos, LineNumber);
+
+	if (bTeleporterHealthBar)
+		DrawBuildingHealthBar(Teleporter, ScreenPos, LineNumber);
+}
+
+void Draw_Buildings::DrawGenericBuildingNameTag(const std::string& Name, CGenericBuilding& Building, const Vector2& ScreenPos, int& LineNumber)
+{
+	std::string NameTagString = std::format("({0:d}) {2:s} [{1:.0f}m]", Building.m_CurrentBuildingLevel, Building.DistanceFromLocalPlayer(), Name.c_str());
+
+	DrawGenericTextAtScreenPosition(NameTagString, ScreenPos, LineNumber, (Building.IsBlu()) ? ColorPicker::BluTeam : ColorPicker::RedTeam);
+}
+
+void Draw_Buildings::DrawBuildingHealthBar(CGenericBuilding& Building, const Vector2& ScreenPosition, int& LineNumber)
+{
+	DrawGenericStatusBar(static_cast<float>(Building.m_CurrentHealth), static_cast<float>(Building.m_MaxHealth), (Building.IsBlu()) ? ColorPicker::BluTeam : ColorPicker::RedTeam, ImGui::GetWindowDrawList(), ScreenPosition, LineNumber);
+	LineNumber--;
+	DrawGenericTextAtScreenPosition(std::format("{}", Building.m_CurrentHealth), ScreenPosition, LineNumber);
+}
+
+void Draw_Buildings::DrawSentryAmmoBar(CSentryGun& Gun, const Vector2& ScreenPosition, int& LineNumber)
+{
+	DrawGenericStatusBar(Gun.m_NumBullets, Gun.GetMaxAmmo(), (Gun.IsBlu()) ? ColorPicker::BluTeam : ColorPicker::RedTeam, ImGui::GetWindowDrawList(), ScreenPosition, LineNumber);
+	LineNumber--;
+	DrawGenericTextAtScreenPosition(std::format("{}", Gun.m_NumBullets), ScreenPosition, LineNumber);
 }

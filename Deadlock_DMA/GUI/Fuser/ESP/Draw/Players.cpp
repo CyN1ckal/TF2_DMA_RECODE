@@ -5,6 +5,7 @@
 #include "TF2/Constants/Bone Pairs/BonePairs.h"
 #include "TF2/Constants/Strings/StatusEffects.h"
 #include "GUI/Color Picker/Color Picker.h"
+#include "General Drawing.h"
 
 void Draw_Players::DrawAll()
 {
@@ -37,6 +38,8 @@ void Draw_Players::DrawAll()
 
 		DrawNametag(Player, ScreenPos, DrawList, LineNumber);
 
+		DrawStatusBar(Player, ScreenPos, DrawList, LineNumber);
+
 		DrawBones(Player, WindowPos, DrawList);
 	}
 }
@@ -47,6 +50,8 @@ void Draw_Players::DrawBones(CTFPlayer& Player, const ImVec2& WindowPos, ImDrawL
 	if (BoneList == nullptr) return;
 
 	auto& Bones = Player.m_BoneArray;
+
+	auto BoneColor = (bHighlightMedic && Player.m_PlayerClass == eTFClass::Medic) ? ColorPicker::HighlightedSkeleton : ColorPicker::Skeleton;
 
 	for (auto Pair : *BoneList)
 	{
@@ -61,13 +66,13 @@ void Draw_Players::DrawBones(CTFPlayer& Player, const ImVec2& WindowPos, ImDrawL
 
 		ImVec2 LineStartPos{ WindowPos.x + ScreenPos_1.x, WindowPos.y + ScreenPos_1.y };
 		ImVec2 LineEndPos{ WindowPos.x + ScreenPos_2.x, WindowPos.y + ScreenPos_2.y };
-		DrawList->AddLine(LineStartPos, LineEndPos, ColorPicker::Skeleton, 2.0);
+		DrawList->AddLine(LineStartPos, LineEndPos, BoneColor, 2.0);
 	}
 }
 
 void Draw_Players::DrawNametag(CTFPlayer& Player, const Vector2& ScreenPos, ImDrawList* DrawList, int& LineNumber)
 {
-	std::string DisplayString = std::format("{0:d} {1:s} [{2:.0f}m]", Player.m_CurrentHealth, Player.GetPlayerClassName(), Player.DistanceFromLocalPlayer());
+	std::string DisplayString = std::format("{0:s} [{1:.0f}m]", Player.GetPlayerClassName(), Player.DistanceFromLocalPlayer());
 
 	auto TextSize = ImGui::CalcTextSize(DisplayString.c_str());
 
@@ -120,6 +125,13 @@ void Draw_Players::DrawConditionString(CTFPlayer& Player, const Vector2& ScreenP
 	ImVec2 TextPos{ ScreenPos.x - (TextSize.x * 0.5f), ScreenPos.y + (TextSize.y * LineNumber) };
 	DrawList->AddText(TextPos, ImColor(255, 255, 255), FinalConditionString.c_str());
 	LineNumber++;
+}
+
+void Draw_Players::DrawStatusBar(CTFPlayer& Player, const Vector2& ScreenPos, ImDrawList* DrawList, int& LineNumber)
+{
+	DrawGenericStatusBar(static_cast<float>(Player.m_CurrentHealth), static_cast<float>(Player.GetMaxHealth()), (Player.IsBlu()) ? ColorPicker::BluTeam : ColorPicker::RedTeam, DrawList, ScreenPos, LineNumber);
+	LineNumber--;
+	DrawGenericTextAtScreenPosition(std::format("{0:d}", Player.m_CurrentHealth), ScreenPos, LineNumber);
 }
 
 /*

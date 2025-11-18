@@ -45,12 +45,17 @@ void ESP::RenderSettings()
 	ImGui::Indent();
 	ImGui::Checkbox("Hide Friendly Players", &Draw_Players::bHideFriendly);
 	ImGui::Checkbox("Hide Dormant Players", &Draw_Players::bHideDormant);
+	ImGui::Checkbox("Highlight Medics", &Draw_Players::bHighlightMedic);
 	ImGui::Unindent();
 
 	ImGui::Checkbox("Enable Building ESP", &Draw_Buildings::bMasterToggle);
 	ImGui::Indent();
 	ImGui::Checkbox("Hide Friendly Buildings", &Draw_Buildings::bHideFriendly);
 	ImGui::Checkbox("Hide Dormant Buildings", &Draw_Buildings::bHideDormant);
+	ImGui::Checkbox("Sentry Health Bar", &Draw_Buildings::bSentryHealthBar);
+	ImGui::Checkbox("Sentry Ammo Bar", &Draw_Buildings::bSentryAmmoBar);
+	ImGui::Checkbox("Dispenser Health Bar", &Draw_Buildings::bDispenserHealthBar);
+	ImGui::Checkbox("Teleporter Health Bar", &Draw_Buildings::bTeleporterHealthBar);
 	ImGui::Unindent();
 
 	ImGui::Checkbox("Enable Explosive ESP", &Draw_Explosives::bMasterToggle);

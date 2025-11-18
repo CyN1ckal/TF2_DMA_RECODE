@@ -24,7 +24,9 @@ void Draw_Consumables::operator()(CAmmoPack& AmmoPack)
 
 	std::string DisplayString = std::format("{0:s} [{1:.0f}m]", Constants::AmmoPackString, AmmoPack.DistanceFromLocalPlayer());
 
-	DrawGenericText(DisplayString, AmmoPack.m_Origin, ColorPicker::AmmoPack);
+	int LineNumber = 0;
+
+	DrawGenericTextAtWorldPosition(DisplayString, AmmoPack.m_Origin, LineNumber, ColorPicker::AmmoPack);
 }
 
 void Draw_Consumables::operator()(CHealthPack& HealthPack)
@@ -35,5 +37,7 @@ void Draw_Consumables::operator()(CHealthPack& HealthPack)
 
 	std::string DisplayString = std::format("{0:s} [{1:.0f}m]", Constants::HealthPackString, HealthPack.DistanceFromLocalPlayer());
 
-	DrawGenericText(DisplayString, HealthPack.m_Origin, ColorPicker::HealthPack);
+	int LineNumber = 0;
+
+	DrawGenericTextAtWorldPosition(DisplayString, HealthPack.m_Origin, LineNumber, ColorPicker::HealthPack);
 }

@@ -139,3 +139,30 @@ bool CTFPlayer::IsInCond(ETFCond Cond)
 	auto Bits = m_ConditionBits.GetBits();
 	return Bits.test(static_cast<int16_t>(Cond));
 }
+
+const uint32_t CTFPlayer::GetMaxHealth()
+{
+	switch (m_PlayerClass)
+	{
+	case eTFClass::Scout:
+		return 125;
+	case eTFClass::Soldier:
+		return 200;
+	case eTFClass::Pyro:
+		return 175;
+	case eTFClass::Demo:
+		return 175;
+	case eTFClass::Heavy:
+		return 300;
+	case eTFClass::Engineer:
+		return 125;
+	case eTFClass::Medic:
+		return 150;
+	case eTFClass::Sniper:
+		return 125;
+	case eTFClass::Spy:
+		return 125;
+	default:
+		return 0;
+	}
+}

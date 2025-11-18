@@ -10,4 +10,8 @@ public:
 public:
 	CSentryGun(uintptr_t EntityAddress) : CGenericBuilding(EntityAddress) {};
 	void PrepareRead_1(VMMDLL_SCATTER_HANDLE vmsh);
+	void QuickRead(VMMDLL_SCATTER_HANDLE vmsh);
+
+public:
+	const uint32_t GetMaxAmmo();
 };

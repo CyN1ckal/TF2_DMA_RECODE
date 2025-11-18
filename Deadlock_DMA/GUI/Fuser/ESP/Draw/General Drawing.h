@@ -2,4 +2,6 @@
 #include "pch.h"
 #include "Engine/Math/MatrixMath.h"
 
-void DrawGenericText(const std::string& Name, Vector3& Origin, ImColor Color = ImColor(255,255,255));
+void DrawGenericTextAtWorldPosition(const std::string& Name, const Vector3& Origin, int& LineNumber, ImColor Color = ImColor(255, 255, 255));
+void DrawGenericTextAtScreenPosition(const std::string& Name, const Vector2& ScreenPos, int& LineNumber, ImColor Color = ImColor(255, 255, 255));
+void DrawGenericStatusBar(float CurrentValue, float MaxValue, ImColor Color, ImDrawList* DrawList, const Vector2& ScreenPos, int& LineNumber);

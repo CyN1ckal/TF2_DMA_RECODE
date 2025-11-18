@@ -17,6 +17,7 @@ void ColorPicker::RenderColorPicker()
 	MyColorEdit4("Dormant", Dormant);
 	MyColorEdit4("Unknown", Unknown);
 	MyColorEdit4("Skeleton", Skeleton);
+	MyColorEdit4("Highlighted Skeleton", HighlightedSkeleton);
 	MyColorEdit4("Max FOV", MaxFOV);
 	MyColorEdit4("Deadzone FOV", DeadzoneFOV);
 	MyColorEdit4("Health Pack", HealthPack);
@@ -24,6 +25,7 @@ void ColorPicker::RenderColorPicker()
 	MyColorEdit4("Money", Money);
 	MyColorEdit4("Rocket", Rocket);
 	MyColorEdit4("Sticky", Sticky);
+	MyColorEdit4("Value Bar Background", ValueBarBackground);
 
 	ImGui::End();
 }

@@ -20,8 +20,11 @@ void CBaseEntity::PrepareRead_1(VMMDLL_SCATTER_HANDLE vmsh, bool bReadHealth)
 	uintptr_t ModelPtrAddress = m_EntityAddress + Offsets::CBaseEntity::pModel;
 	VMMDLL_Scatter_PrepareEx(vmsh, ModelPtrAddress, sizeof(uintptr_t), reinterpret_cast<BYTE*>(&m_ModelAddress), nullptr);
 
-	uintptr_t CurrentHealthAddress = m_EntityAddress + Offsets::CBaseEntity::CurrentHealth;
-	VMMDLL_Scatter_PrepareEx(vmsh, CurrentHealthAddress, sizeof(uint32_t), reinterpret_cast<BYTE*>(&m_CurrentHealth), nullptr);
+	if (bReadHealth)
+	{
+		uintptr_t CurrentHealthAddress = m_EntityAddress + Offsets::CBaseEntity::CurrentHealth;
+		VMMDLL_Scatter_PrepareEx(vmsh, CurrentHealthAddress, sizeof(uint32_t), reinterpret_cast<BYTE*>(&m_CurrentHealth), nullptr);
+	}
 
 	uintptr_t TeamIDAddress = m_EntityAddress + Offsets::CBaseEntity::TeamID;
 	VMMDLL_Scatter_PrepareEx(vmsh, TeamIDAddress, sizeof(uint32_t), reinterpret_cast<BYTE*>(&m_TeamID), nullptr);
