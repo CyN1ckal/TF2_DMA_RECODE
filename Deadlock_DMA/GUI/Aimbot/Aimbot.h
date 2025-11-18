@@ -11,6 +11,7 @@ public:
 
 private:
 	static inline bool bMasterToggle{ false };
+	static inline bool bAimHead{ true };
 	static inline float fMaxFOV{ 100.0f };
 	static inline float fDeadzoneFOV{ 2.0f };
 	static inline float fDampen{ 0.95f };

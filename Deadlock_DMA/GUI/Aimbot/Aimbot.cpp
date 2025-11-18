@@ -30,7 +30,8 @@ void Aimbot::RenderSettings()
 	}
 
 	ImGui::Checkbox("Enable Aimbot", &bMasterToggle);
-
+	ImGui::SameLine();
+	ImGui::Checkbox("Aim for Head", &bAimHead);
 	ImGui::SliderFloat("Max FOV", &fMaxFOV, 1.0f, 500.0f);
 	ImGui::SliderFloat("Deadzone FOV", &fDeadzoneFOV, 1.0f, 20.0f);
 	ImGui::SliderFloat("Dampen", &fDampen, 0.01, 1.0f);
@@ -109,7 +110,7 @@ Vector2 Aimbot::GetBestMouseDelta()
 		if (Player.IsDead()) continue;
 
 		Vector2 ScreenPos{};
-		if (!WorldToScreen(Player.GetHeadPosition(), ScreenPos))
+		if (!WorldToScreen((bAimHead) ? Player.GetHeadPosition() : Player.GetChestPosition(), ScreenPos))
 			continue;
 
 		Vector2 Delta = ScreenPos - CenterScreen;
@@ -147,7 +148,7 @@ Vector2 Aimbot::GetMouseDeltaToTarget(uintptr_t TargetEntityAddress)
 		if (Player.IsDead()) continue;
 
 		Vector2 ScreenPos{};
-		if (!WorldToScreen(Player.GetHeadPosition(), ScreenPos))
+		if (!WorldToScreen((bAimHead) ? Player.GetHeadPosition() : Player.GetChestPosition(), ScreenPos))
 			continue;
 
 		Vector2 Delta = ScreenPos - CenterScreen;

@@ -26,6 +26,7 @@ public:
 	bool IsLocalPlayer();
 	std::string_view GetPlayerClassName();
 	Vector3 GetHeadPosition();
+	Vector3 GetChestPosition();
 	bool IsInCond(ETFCond Cond);
 	const uint32_t GetMaxHealth();
 };

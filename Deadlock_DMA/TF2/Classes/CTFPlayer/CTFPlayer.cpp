@@ -134,6 +134,26 @@ Vector3 CTFPlayer::GetHeadPosition()
 	}
 }
 
+Vector3 CTFPlayer::GetChestPosition()
+{
+	switch (m_PlayerClass)
+	{
+	case eTFClass::Soldier:
+	case eTFClass::Demo:
+	case eTFClass::Sniper:
+	case eTFClass::Medic:
+	case eTFClass::Scout:
+	case eTFClass::Spy:
+	case eTFClass::Pyro:
+		return m_BoneArray[2].GetPosition();
+	case eTFClass::Engineer:
+	case eTFClass::Heavy:
+		return m_BoneArray[3].GetPosition();
+	default:
+		return { 0.0f,0.0f,0.0f };
+	}
+}
+
 bool CTFPlayer::IsInCond(ETFCond Cond)
 {
 	auto Bits = m_ConditionBits.GetBits();
