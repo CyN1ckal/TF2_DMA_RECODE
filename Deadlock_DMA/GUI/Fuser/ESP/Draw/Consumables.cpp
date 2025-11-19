@@ -21,6 +21,7 @@ void Draw_Consumables::operator()(CAmmoPack& AmmoPack)
 	if (bDrawAmmoPacks == false) return;
 
 	if (AmmoPack.IsInvalid()) return;
+	if (AmmoPack.IsDormant()) return;
 
 	std::string DisplayString = std::format("{0:s} [{1:.0f}m]", Constants::AmmoPackString, AmmoPack.DistanceFromLocalPlayer());
 
@@ -34,6 +35,7 @@ void Draw_Consumables::operator()(CHealthPack& HealthPack)
 	if (bDrawHealthPacks == false) return;
 
 	if (HealthPack.IsInvalid()) return;
+	if (HealthPack.IsDormant()) return;
 
 	std::string DisplayString = std::format("{0:s} [{1:.0f}m]", Constants::HealthPackString, HealthPack.DistanceFromLocalPlayer());
 

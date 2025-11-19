@@ -34,6 +34,8 @@ namespace Offsets
 		inline std::ptrdiff_t BoneArray = 0x838;
 		inline std::ptrdiff_t ConditionBits = 0x1F64;
 		inline std::ptrdiff_t ClassID = 0x1BA0;
+		inline std::ptrdiff_t CurrentHealth = 0x1DF4;
+		inline std::ptrdiff_t MaxHealth = 0x1DF8;
 	}
 
 	namespace CGenericBuilding

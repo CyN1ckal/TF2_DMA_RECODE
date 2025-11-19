@@ -11,6 +11,7 @@ public:
 	BoneArray m_BoneArray{ 0 };
 	ConditionBits m_ConditionBits{ 0 };
 	uintptr_t m_BoneArrayAddress{ 0 };
+	uint32_t m_MaxHealth{ 0 };
 	eTFClass m_PlayerClass{ eTFClass::Scout };
 
 public:

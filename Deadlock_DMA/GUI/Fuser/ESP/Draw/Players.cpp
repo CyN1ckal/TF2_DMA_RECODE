@@ -129,9 +129,38 @@ void Draw_Players::DrawConditionString(CTFPlayer& Player, const Vector2& ScreenP
 
 void Draw_Players::DrawStatusBar(CTFPlayer& Player, const Vector2& ScreenPos, ImDrawList* DrawList, int& LineNumber)
 {
-	DrawGenericStatusBar(static_cast<float>(Player.m_CurrentHealth), static_cast<float>(Player.GetMaxHealth()), (Player.IsBlu()) ? ColorPicker::BluTeam : ColorPicker::RedTeam, DrawList, ScreenPos, LineNumber);
-	LineNumber--;
-	DrawGenericTextAtScreenPosition(std::format("{0:d}", Player.m_CurrentHealth), ScreenPos, LineNumber);
+	constexpr float HealthBarWidth = 80.0f;
+	constexpr float Padding = 2.0f;
+	constexpr float EffectiveWidth = HealthBarWidth - (Padding * 2.0f);
+
+	std::string HealthString = std::format("{}", Player.m_CurrentHealth);
+	auto TextSize = ImGui::CalcTextSize(HealthString.c_str());
+
+	ImVec2 TopLeft = { ScreenPos.x - (HealthBarWidth / 2.0f), ScreenPos.y + (TextSize.y * LineNumber) };
+	ImVec2 BottomRight = { TopLeft.x + HealthBarWidth, TopLeft.y + TextSize.y };
+	DrawList->AddRectFilled(TopLeft, BottomRight, ColorPicker::HealthBarBackground);
+
+	uint32_t CappedHealth = std::min(Player.m_CurrentHealth, Player.GetMaxHealth());
+	float HealthPercent = static_cast<float>(CappedHealth) / static_cast<float>(Player.GetMaxHealth());
+
+	TopLeft.x += Padding;
+	TopLeft.y += Padding;
+	BottomRight.x = TopLeft.x + (EffectiveWidth * HealthPercent);
+	BottomRight.y -= Padding;
+	DrawList->AddRectFilled(TopLeft, BottomRight, ColorPicker::HealthBarForeground);
+
+	if (Player.m_CurrentHealth > Player.GetMaxHealth())
+	{
+		float OverhealPercent = static_cast<float>(Player.m_CurrentHealth - Player.GetMaxHealth()) / (static_cast<float>(Player.GetMaxHealth()) * 0.5f);
+		OverhealPercent = std::clamp(OverhealPercent, 0.0f, 1.0f);
+		BottomRight.x = TopLeft.x + (EffectiveWidth * OverhealPercent);
+		DrawList->AddRectFilled(TopLeft, BottomRight, ColorPicker::OverhealBarForeground);
+	}
+
+	ImVec2 TextPos{ ScreenPos.x - (TextSize.x * 0.5f), ScreenPos.y + (TextSize.y * LineNumber) };
+	DrawList->AddText(TextPos, ImColor(255, 255, 255), HealthString.c_str());
+
+	LineNumber++;
 }
 
 /*

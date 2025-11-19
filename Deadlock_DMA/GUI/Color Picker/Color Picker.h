@@ -20,4 +20,7 @@ public:
 	static inline ImColor Rocket = { 255,0,0 };
 	static inline ImColor Sticky = { 255,0,0 };
 	static inline ImColor ValueBarBackground = { 50,50,50 };
+	static inline ImColor HealthBarBackground = { 50,50,50 };
+	static inline ImColor HealthBarForeground = { 0,215,0 };
+	static inline ImColor OverhealBarForeground = { 0,255,255 };
 };

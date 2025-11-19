@@ -10,7 +10,7 @@
 
 void CTFPlayer::PrepareRead_1(VMMDLL_SCATTER_HANDLE vmsh)
 {
-	CBaseEntity::PrepareRead_1(vmsh);
+	CBaseEntity::PrepareRead_1(vmsh, false);
 
 	uintptr_t ConditionBitsAddress = m_EntityAddress + Offsets::CTFPlayer::ConditionBits;
 	VMMDLL_Scatter_PrepareEx(vmsh, ConditionBitsAddress, sizeof(ConditionBits), reinterpret_cast<BYTE*>(&m_ConditionBits), nullptr);
@@ -20,6 +20,12 @@ void CTFPlayer::PrepareRead_1(VMMDLL_SCATTER_HANDLE vmsh)
 
 	uintptr_t ClassID = m_EntityAddress + Offsets::CTFPlayer::ClassID;
 	VMMDLL_Scatter_PrepareEx(vmsh, ClassID, sizeof(uint32_t), reinterpret_cast<BYTE*>(&m_PlayerClass), nullptr);
+
+	uintptr_t CurrentHealthAddress = m_EntityAddress + Offsets::CTFPlayer::CurrentHealth;
+	VMMDLL_Scatter_PrepareEx(vmsh, CurrentHealthAddress, sizeof(uint32_t), reinterpret_cast<BYTE*>(&m_CurrentHealth), nullptr);
+
+	uintptr_t MaxHealthAddress = m_EntityAddress + Offsets::CTFPlayer::MaxHealth;
+	VMMDLL_Scatter_PrepareEx(vmsh, MaxHealthAddress, sizeof(uint32_t), reinterpret_cast<BYTE*>(&m_MaxHealth), nullptr);
 }
 
 void CTFPlayer::PrepareRead_2(VMMDLL_SCATTER_HANDLE vmsh)
@@ -59,7 +65,7 @@ void CTFPlayer::QuickRead(VMMDLL_SCATTER_HANDLE vmsh)
 
 	CBaseEntity::QuickRead(vmsh);
 
-	uintptr_t CurrentHealthAddress = m_EntityAddress + Offsets::CBaseEntity::CurrentHealth;
+	uintptr_t CurrentHealthAddress = m_EntityAddress + Offsets::CTFPlayer::CurrentHealth;
 	VMMDLL_Scatter_PrepareEx(vmsh, CurrentHealthAddress, sizeof(uint32_t), reinterpret_cast<BYTE*>(&m_CurrentHealth), nullptr);
 
 	VMMDLL_Scatter_PrepareEx(vmsh, m_BoneArrayAddress, sizeof(BoneArray), reinterpret_cast<BYTE*>(&m_BoneArray), nullptr);
@@ -162,27 +168,5 @@ bool CTFPlayer::IsInCond(ETFCond Cond)
 
 const uint32_t CTFPlayer::GetMaxHealth()
 {
-	switch (m_PlayerClass)
-	{
-	case eTFClass::Scout:
-		return 125;
-	case eTFClass::Soldier:
-		return 200;
-	case eTFClass::Pyro:
-		return 175;
-	case eTFClass::Demo:
-		return 175;
-	case eTFClass::Heavy:
-		return 300;
-	case eTFClass::Engineer:
-		return 125;
-	case eTFClass::Medic:
-		return 150;
-	case eTFClass::Sniper:
-		return 125;
-	case eTFClass::Spy:
-		return 125;
-	default:
-		return 0;
-	}
+	return m_MaxHealth;
 }
