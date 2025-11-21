@@ -731,6 +731,7 @@
     <ClCompile Include="TF2\Camera\Camera.cpp" />
     <ClCompile Include="TF2\Classes\CBaseEntity\CBaseEntity.cpp" />
     <ClCompile Include="TF2\Classes\CGenericBuilding\CGenericBuilding.cpp" />
+    <ClCompile Include="TF2\Classes\CMoney\CMoney.cpp" />
     <ClCompile Include="TF2\Classes\CSentryGun\CSentryGun.cpp" />
     <ClCompile Include="TF2\Classes\CTFPlayer\CTFPlayer.cpp" />
     <ClCompile Include="TF2\IEntityList\IEntityList.cpp" />
@@ -783,6 +784,7 @@
     <ClInclude Include="TF2\Classes\CDispenser\CDispenser.h" />
     <ClInclude Include="TF2\Classes\CGenericBuilding\CGenericBuilding.h" />
     <ClInclude Include="TF2\Classes\CHealthPack\CHealthPack.h" />
+    <ClInclude Include="TF2\Classes\CMoney\CMoney.h" />
     <ClInclude Include="TF2\Classes\CRocket\CRocket.h" />
     <ClInclude Include="TF2\Classes\CSentryGun\CSentryGun.h" />
     <ClInclude Include="TF2\Classes\CStickybomb\CStickybomb.h" />

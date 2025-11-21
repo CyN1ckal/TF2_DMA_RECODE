@@ -209,6 +209,7 @@ bool IEntityList::SortEntityAddresses(DMA_Connection* Conn)
 	m_StickybombAddresses.clear();
 	m_HealthPackAddresses.clear();
 	m_AmmoPackAddresses.clear();
+	m_MoneyAddresses.clear();
 
 	for (auto&& [EntAddr, VTableAddr] : EntityVTableMap)
 	{
@@ -237,6 +238,9 @@ bool IEntityList::SortEntityAddresses(DMA_Connection* Conn)
 			continue;
 		case ClassIDs::CTFAmmoPack:
 			m_AmmoPackAddresses.push_back(EntAddr);
+			continue;
+		case ClassIDs::CCurrencyPack:
+			m_MoneyAddresses.push_back(EntAddr);
 			continue;
 		default:
 			if (std::ranges::find(m_AmmoPackModelAddresses, VTableAddr.ModelAddress) != m_AmmoPackModelAddresses.end())
@@ -431,6 +435,9 @@ bool IEntityList::UpdateAllConsumables(DMA_Connection* Conn)
 
 	for (auto& AmmoPackAddr : m_AmmoPackAddresses)
 		m_Consumables.emplace_back(CAmmoPack(AmmoPackAddr));
+
+	for(auto& MoneyAddr : m_MoneyAddresses)
+		m_Consumables.emplace_back(CMoney(MoneyAddr));
 
 	auto vmsh = VMMDLL_Scatter_Initialize(Conn->GetHandle(), TF2::Proc().GetPID(), VMMDLL_FLAG_NOCACHE);
 

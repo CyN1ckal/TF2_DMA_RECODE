@@ -77,7 +77,11 @@ void Aimbot::OnDMAFrame(DMA_Connection* Conn)
 		if (PreviousTargetEntityAddress == 0x0)
 			MouseDelta = GetBestMouseDelta();
 		else
+		{
 			MouseDelta = GetMouseDeltaToTarget(PreviousTargetEntityAddress);
+			if (MouseDelta.x == 0.0f && MouseDelta.y == 0.0f)
+				PreviousTargetEntityAddress = 0;
+		}
 
 		if (MouseDelta == PreviousDelta) continue;
 		PreviousDelta = MouseDelta;

@@ -126,6 +126,9 @@
     <ClCompile Include="GUI\Fuser\ESP\Draw\Consumables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TF2\Classes\CMoney\CMoney.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -306,6 +309,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GUI\Fuser\ESP\Draw\Consumables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TF2\Classes\CMoney\CMoney.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

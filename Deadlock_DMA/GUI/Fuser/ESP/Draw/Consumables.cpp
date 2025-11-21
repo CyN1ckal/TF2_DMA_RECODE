@@ -43,3 +43,17 @@ void Draw_Consumables::operator()(CHealthPack& HealthPack)
 
 	DrawGenericTextAtWorldPosition(DisplayString, HealthPack.m_Origin, LineNumber, ColorPicker::HealthPack);
 }
+
+void Draw_Consumables::operator()(CMoney& Money)
+{
+	if (!bDrawMoney) return;
+
+	if (Money.IsInvalid()) return;
+	if (Money.IsDormant()) return;
+
+	std::string DisplayString = std::format("{0:s} [{1:.0f}m]", Constants::MoneyString, Money.DistanceFromLocalPlayer());
+
+	int LineNumber = 0;
+
+	DrawGenericTextAtWorldPosition(DisplayString, Money.m_Origin, LineNumber, ColorPicker::Money);
+}

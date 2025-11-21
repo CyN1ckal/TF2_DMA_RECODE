@@ -9,6 +9,7 @@
 #include "TF2/Classes/CStickybomb/CStickybomb.h"
 #include "TF2/Classes/CAmmoPack/CAmmoPack.h"
 #include "TF2/Classes/CHealthPack/CHealthPack.h"
+#include "TF2/Classes/CMoney/CMoney.h"
 
 #include <variant>
 
@@ -59,9 +60,10 @@ namespace IEntityList
 
 	bool UpdateAllConsumables(DMA_Connection* Conn);
 	bool UpdateExistingConsumables(DMA_Connection* Conn);
-	using Consumables = std::variant<CHealthPack, CAmmoPack>;
+	using Consumables = std::variant<CHealthPack, CAmmoPack, CMoney>;
 	inline std::mutex m_ConsumableMutex{};
 	inline std::vector<Consumables> m_Consumables{};
 	inline std::vector<uintptr_t> m_HealthPackAddresses{};
 	inline std::vector<uintptr_t> m_AmmoPackAddresses{};
+	inline std::vector<uintptr_t> m_MoneyAddresses{};
 };

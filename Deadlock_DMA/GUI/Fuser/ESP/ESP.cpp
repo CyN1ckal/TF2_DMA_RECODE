@@ -67,6 +67,7 @@ void ESP::RenderSettings()
 	ImGui::Indent();
 	ImGui::Checkbox("Draw Health Packs", &Draw_Consumables::bDrawHealthPacks);
 	ImGui::Checkbox("Draw Ammo Packs", &Draw_Consumables::bDrawAmmoPacks);
+	ImGui::Checkbox("Draw Money", &Draw_Consumables::bDrawMoney);
 	ImGui::Unindent();
 
 	ImGui::End();
