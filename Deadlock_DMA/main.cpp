@@ -13,7 +13,18 @@ std::atomic<bool> bRunning{ true };
 #ifndef CATCH_ENABLE
 int main()
 {
-	DMA_Connection* Conn = DMA_Connection::GetInstance();
+	DMA_Connection* Conn = nullptr;
+
+	try
+	{
+		Conn = DMA_Connection::GetInstance();
+	}
+	catch (const std::exception& e)
+	{
+		std::println("[FATAL] Exception: {}", e.what());
+		system("pause");
+		return -1;
+	}
 
 	TF2::Initialize(Conn);
 
