@@ -53,10 +53,10 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{ea70a989-e9d4-4eb9-8abc-235d06a2599f}</ProjectGuid>
+    <ProjectGuid>{BB5164B2-4BCB-477F-8A1B-7BE2AD1D1FAE}</ProjectGuid>
     <RootNamespace>DeadlockDMA</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Old</ProjectName>
+    <ProjectName>TF2_DMA</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
